@@ -58,6 +58,10 @@ def main():
 def runfile(folder, filename):
     fullfile = folder + filename
     radar = pyart.io.read_nexrad_archive(fullfile)
+    
+    time_hh = filename[13:15]
+    time_min = filename[15:17]
+    time_sec = filename[17:19]
 
     # for key in radar.fields.keys():
     #     print key
@@ -102,6 +106,9 @@ def runfile(folder, filename):
 
     # print 'pyart plotting'
 
+    outMatFile = './outData/' + filename + '.mat'
+    sp.io.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores']}) 
+
     fig = plt.figure()
 
     ax = fig.add_subplot(221)
@@ -137,6 +144,8 @@ def runfile(folder, filename):
     plt.title('Final Core Selection')
     ax.tick_params(axis='both',which='major',labelsize=7)
     ax.tick_params(axis='both',which='minor',labelsize=7)
+
+    fig.suptitle("2011-04-25 (%s:%s:%s)" % (time_hh,time_min,time_sec))
 
     fig.savefig('./images/' + filename + '.png')
     plt.close(fig)
