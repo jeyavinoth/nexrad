@@ -1,2 +1,4 @@
 *.png
 .nfs*
+*.mat
+*.jpg

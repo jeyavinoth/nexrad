@@ -4,6 +4,7 @@ import matplotlib
 import pyart
 import numpy as np
 import scipy as sp
+import scipy.io as sio
 import matplotlib.pyplot as plt
 import copy
 import math
@@ -107,48 +108,48 @@ def runfile(folder, filename):
     # print 'pyart plotting'
 
     outMatFile = './outData/' + filename + '.mat'
-    sp.io.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores']}) 
+    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores']}) 
 
-    fig = plt.figure()
+    # fig = plt.figure()
 
-    ax = fig.add_subplot(221)
-    CS = plt.pcolor(lon,lat,ref,cmap=plt.cm.hot,vmin=0,vmax=64)
-    # ax.imshow(ref,origin='lower'); 
-    cbar = plt.colorbar(CS)
-    plt.title('Reflectivity (dBZ)')
-    ax.tick_params(axis='both',which='major',labelsize=7)
-    ax.tick_params(axis='both',which='minor',labelsize=7)
+    # ax = fig.add_subplot(221)
+    # CS = plt.pcolor(lon,lat,ref,cmap=plt.cm.hot,vmin=0,vmax=64)
+    # # ax.imshow(ref,origin='lower'); 
+    # cbar = plt.colorbar(CS)
+    # plt.title('Reflectivity (dBZ)')
+    # ax.tick_params(axis='both',which='major',labelsize=7)
+    # ax.tick_params(axis='both',which='minor',labelsize=7)
 
     # ax = fig.add_subplot(222)
     # CS = plt.pcolor(cores['backAvg'],cmap=plt.cm.hot,vmin=0,vmax=64)
     # cbar = plt.colorbar(CS)
     # cbar.ax.set_ylabel('Background Mean (dBZ)')
 
-    ax = fig.add_subplot(222)
-    CS = plt.pcolor(lon,lat,cores['ref40'],cmap=plt.cm.cool,vmin=0,vmax=1)
-    cbar = plt.colorbar(CS)
-    plt.title('Reflectivity > 40 dBz')
-    ax.tick_params(axis='both',which='major',labelsize=7)
-    ax.tick_params(axis='both',which='minor',labelsize=7)
+    # ax = fig.add_subplot(222)
+    # CS = plt.pcolor(lon,lat,cores['ref40'],cmap=plt.cm.cool,vmin=0,vmax=1)
+    # cbar = plt.colorbar(CS)
+    # plt.title('Reflectivity > 40 dBz')
+    # ax.tick_params(axis='both',which='major',labelsize=7)
+    # ax.tick_params(axis='both',which='minor',labelsize=7)
 
-    ax = fig.add_subplot(223)
-    CS = plt.pcolor(lon,lat,cores['corebg'],cmap=plt.cm.cool,vmin=0,vmax=1)
-    cbar = plt.colorbar(CS)
-    plt.title('Background Comp Core')
-    ax.tick_params(axis='both',which='major',labelsize=7)
-    ax.tick_params(axis='both',which='minor',labelsize=7)
+    # ax = fig.add_subplot(223)
+    # CS = plt.pcolor(lon,lat,cores['corebg'],cmap=plt.cm.cool,vmin=0,vmax=1)
+    # cbar = plt.colorbar(CS)
+    # plt.title('Background Comp Core')
+    # ax.tick_params(axis='both',which='major',labelsize=7)
+    # ax.tick_params(axis='both',which='minor',labelsize=7)
 
-    ax = fig.add_subplot(224)
-    CS = plt.pcolor(lon,lat,cores['cores'],cmap=plt.cm.cool,vmin=0,vmax=1)
-    cbar = plt.colorbar(CS)
-    plt.title('Final Core Selection')
-    ax.tick_params(axis='both',which='major',labelsize=7)
-    ax.tick_params(axis='both',which='minor',labelsize=7)
+    # ax = fig.add_subplot(224)
+    # CS = plt.pcolor(lon,lat,cores['cores'],cmap=plt.cm.cool,vmin=0,vmax=1)
+    # cbar = plt.colorbar(CS)
+    # plt.title('Final Core Selection')
+    # ax.tick_params(axis='both',which='major',labelsize=7)
+    # ax.tick_params(axis='both',which='minor',labelsize=7)
 
-    fig.suptitle("2011-04-25 (%s:%s:%s)" % (time_hh,time_min,time_sec))
+    # fig.suptitle("2011-04-25 (%s:%s:%s)" % (time_hh,time_min,time_sec))
 
-    fig.savefig('./images/' + filename + '.png')
-    plt.close(fig)
+    # fig.savefig('./images/' + filename + '.png')
+    # plt.close(fig)
 
     print ('Completed ' + filename)
     # plt.show()
