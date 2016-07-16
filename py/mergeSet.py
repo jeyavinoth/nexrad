@@ -9,63 +9,43 @@ import matplotlib.pyplot as plt
 import copy
 import math
 import os
+import glob
 
 # global sample file
 
 # main function to read in all the necessary nexrad data 
 def main():
-    folder = '/mnt/drive1/jj/nexrad/data/raw_station_data/'
+    folder = '/mnt/drive1/jj/nexrad/data/tempData/'
+    radarInfo = readData(folder)
+    grid = convToGrid(radarInfo['radarData'])
+    runfile(grid)
 
-    # file1 = 'KVNX20110425_090129_V06';
-    # file2 = 'KVNX20110425_090129_V06';
-    file1 = 'KICT20110425_090146_V03'; 
-    file2 = 'KICT20110425_090146_V03'; 
+def readData(folder):
+    searchString = folder + '*'
+    radarFiles = glob.glob(searchString)
+    radarData = []
+    cnt = 0
     
-    # for filename in os.listdir(folder):
-    #     if filename.endswith('_V06'):
-    #         imgFile = '/mnt/drive1/jj/nexrad/src/images' + filename + '.png'
-    #         if os.path.isfile(imgFile):
-    #             print ('skipping' + filename)
-    #             continue 
-    #         else:
-    #             runfile(folder, file1, file2)
-    runfile(folder,file1,file2); 
-            
+    firstFile = radarFiles[0]
+    folderLen = len(folder)
+    time_hh = firstFile[13+folderLen:15+folderLen]
+    time_min = firstFile[15+folderLen:17+folderLen]
+    time_sec = firstFile[17+folderLen:19+folderLen]
+    for filename in radarFiles: 
+        radar = pyart.io.read_nexrad_archive(filename)
+        radarData.append(radar)
+        cnt = cnt + 1
+        print ('Completed {0}'.format(filename))
+    return {'radarData': radarData, 'hh': time_hh, 'min': time_min, 'sec': 00}
+
+def convToGrid(radarData):
+    grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,482,482),grid_limits=((2000, 2000), (-246000.0, 500000.0), (-246000.0, 500000.0)),fields=['reflectivity'])
+    return grid
+
 
 # reading in one nexrad file and plotting the figures
-def runfile(folder, file1, file2):
-    fullfile1 = folder + file1
-    fullfile2 = folder + file2
-
-    print fullfile1
-    print fullfile2
-
-    radar1 = pyart.io.read_nexrad_archive(fullfile1)
-    radar2 = pyart.io.read_nexrad_archive(fullfile2)
-    
-    time_hh = file1[13:15]
-    time_min = file1[15:17]
-    time_sec = file1[17:19]
-
-    # for key in radar.fields.keys():
-    #     print key
-
-    # coh_pwr = copy.deepcopy(radar.fields['differential_phase'])
-    # coh_pwr['data'] = coh_pwr['data']*0.+1.
-    # radar.fields['normalized_coherent_power'] = coh_pwr
-
-    # print 'normalized coherent power'
-    # phidp, kdp = pyart.correct.phase_proc_lp(radar, 0.0, debug=True)
-    # radar.add_field('kdp', kdp)
-
-    # refData = radar.fields['reflectivity']
-    # kdp = radar.fields['differential_phase']
+def runfile(radarAll):
    
-    # print 'pyart regridding'
-
-    # grid = pyart.map.grid_from_radars((radar1,radar2,),grid_shape=(1,241,241),grid_limits=((2000, 2000), (-123000.0, 123000.0), (-123000.0, 123000.0)),fields=['reflectivity'])
-    grid = pyart.map.grid_from_radars((radar1,radar2,),grid_shape=(1,482,482),grid_limits=((2000, 2000), (-246000.0, 500000.0), (-246000.0, 500000.0)),fields=['reflectivity'])
-
     axInfo =  grid.axes
 
     latOrigin = axInfo['lat']['data']
@@ -77,11 +57,6 @@ def runfile(folder, file1, file2):
 
     lon,lat = pyart.core.cartesian_to_geographic_aeqd(xArray,yArray,lonOrigin,latOrigin)
 
-    # grid = pyart.map.grid_from_radars(radar,(30,400,400), ((0.,15000.),(-200000.,200000.),(-200000.,200000.)), fields=['differential_phase','reflectivity','kdp'], refl_field='reflectivity',roi_func='dist_beam',h_factor=0.,nb=0.5,bsp=1.,min_radius=502)
-
-    # grid = pyart.map.grid_from_radars(radar,(30,400,400), ((0.,15000.),(-200000.,200000.),(-200000.,200000.)), fields=['reflectivity'], refl_field='reflectivity',roi_func='dist_beam',h_factor=0.,nb=0.5,bsp=1.,min_radius=502)
-
-    # kdp = grid.fields['kdp']['data'][0];
     ref = grid.fields['reflectivity']['data'][0];
     ref = np.asarray(ref)
     ref[ref==0.0] = np.nan
