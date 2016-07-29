@@ -31,20 +31,22 @@ def readData(folder):
     time_hh = firstFile[13+folderLen:15+folderLen]
     time_min = firstFile[15+folderLen:17+folderLen]
     time_sec = firstFile[17+folderLen:19+folderLen]
+
     for filename in radarFiles: 
         radar = pyart.io.read_nexrad_archive(filename)
         radarData.append(radar)
         cnt = cnt + 1
         print ('Completed {0}'.format(filename))
-    return {'radarData': radarData, 'hh': time_hh, 'min': time_min, 'sec': 00}
+
+    return {'radarData': radarData, 'hh': time_hh, 'min': time_min, 'sec': '00'}
 
 def convToGrid(radarData):
-    grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,482,482),grid_limits=((2000, 2000), (-246000.0, 500000.0), (-246000.0, 500000.0)),fields=['reflectivity'])
+    grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
     return grid
 
 
 # reading in one nexrad file and plotting the figures
-def runfile(radarAll):
+def runfile(grid):
    
     axInfo =  grid.axes
 
@@ -66,7 +68,7 @@ def runfile(radarAll):
 
     # print 'pyart plotting'
 
-    outMatFile = './outData/' + file1 + '_' + file2 + '.mat'
+    outMatFile = './outData/test.mat'
     sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores']}) 
 
     fig = plt.figure()
@@ -105,12 +107,11 @@ def runfile(radarAll):
     ax.tick_params(axis='both',which='major',labelsize=7)
     ax.tick_params(axis='both',which='minor',labelsize=7)
 
-    fig.suptitle("2011-04-25 (%s:%s:%s)" % (time_hh,time_min,time_sec))
+    fig.suptitle("2011-04-25 (09:00)")
 
-    fig.savefig('./images/' + file1 + '_' + file2 + '.png')
+    fig.savefig('./images/test.png')
     plt.close(fig)
 
-    print ('Completed ' + file1 +'_' + file2)
     # plt.show()
 
 
