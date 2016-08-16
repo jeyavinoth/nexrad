@@ -17,44 +17,16 @@ import glob
 def main():
     folder = '/mnt/drive4/nexrad/20110425/'
     stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
-    timeStepList = range(8,14)
-    timeStepList = range(9,10)
+
+    timeStepList = range(1,25)
+    # timeStepList = range(9,10)
 
     for timeStep in timeStepList:
         radarInfo = readData(folder,timeStep,stationList)
         grid = convToGrid(radarInfo['radarData'])
         runfile(grid,'20110425',timeStep)
+        print 'Completed {0}'.format(timeStep)
     
-    # old code to run for a single timestep
-    # radarInfo = readData(folder)
-    # grid = convToGrid(radarInfo['radarData'])
-    # runfile(grid)
-
-def readSingleTimeStep(folder):
-    # this function is to read all the files in a folder
-    # manually downloaded data for single timestep for nexrad @ 2011/04/25 @ 09H 
-    # create string to search for all the files in the folder
-    searchString = folder + '*'
-    radarFiles = glob.glob(searchString)
-    radarData = []
-    cnt = 0
-   
-    # find the first file in the list 
-    firstFile = radarFiles[0]
-    folderLen = len(folder)
-
-    time_hh = firstFile[13+folderLen:15+folderLen]
-    time_min = firstFile[15+folderLen:17+folderLen]
-    time_sec = firstFile[17+folderLen:19+folderLen]
-
-    for filename in radarFiles: 
-        radar = pyart.io.read_nexrad_archive(filename)
-        radarData.append(radar)
-        cnt = cnt + 1
-        print ('Completed {0}'.format(filename))
-
-    return {'radarData': radarData, 'hh': time_hh, 'min': time_min, 'sec': '00'}
-
 def readData(folder,hr,stationList):
 
     fileList = []
@@ -64,7 +36,7 @@ def readData(folder,hr,stationList):
     for station in stationList:
 
         # look for all stations given for the date
-        searchString = folder + station + '20110425*_V03'
+        searchString = folder + station + '20110425*_V*'
         radarFiles = glob.glob(searchString)
     
         # if no data is found for the station then skip 
@@ -124,8 +96,6 @@ def runfile(grid,date,timeStep):
 
     # find ref > 40 
     cores = findcores(ref)
-
-    # print 'pyart plotting'
 
     outMatFile = './outData/nex_{0}_{1}.mat'.format(date,timeStep)
     sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores']}) 
