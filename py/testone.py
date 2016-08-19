@@ -9,62 +9,110 @@ import matplotlib.pyplot as plt
 import copy
 import math
 import os
+import glob
+
+import pdb
 
 # global sample file
 
 # main function to read in all the necessary nexrad data 
 def main():
-    folder = '/mnt/drive1/jj/nexrad/data/raw_station_data/'
-
-    file1 = 'KVNX20110425_090129_V06';
-    # file2 = 'KVNX20110425_090129_V06';
-    # file1 = 'KICT20110425_090146_V03'; 
-    # file2 = 'KICT20110425_090146_V03'; 
+    folder = '/mnt/drive4/nexrad/20110425/'
+    # stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
+    stationList = ['KVNX'];
     
-    # for filename in os.listdir(folder):
-    #     if filename.endswith('_V06'):
-    #         imgFile = '/mnt/drive1/jj/nexrad/src/images' + filename + '.png'
-    #         if os.path.isfile(imgFile):
-    #             print ('skipping' + filename)
-    #             continue 
-    #         else:
-    #             runfile(folder, file1, file2)
-    runfile(folder,file1,file2); 
-            
+    timeStepList = range(1,25)
+    timeStepList = range(1,2)
+
+    for timeStep in timeStepList:
+        fileList = readFiles(folder,timeStep,stationList)
+
+    filename = fileList[0]
+  
+    print ('Regridding data') 
+
+    radar = pyart.io.read_nexrad_archive(filename)
+    grid = pyart.map.grid_from_radars((radar,),grid_shape=(12,1000,1000),grid_limits=((0000, 6000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    # grid = pyart.map.grid_from_radars((radar,),grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+
+    axInfo =  grid.axes
+
+    latOrigin = axInfo['lat']['data']
+    lonOrigin = axInfo['lon']['data']
+    altOrigin = axInfo['alt']['data']
+
+    xArray = axInfo['x_disp']['data']
+    yArray = axInfo['y_disp']['data']
+
+    print ('Getting Lat & Lon')
+    lon,lat = pyart.core.cartesian_to_geographic_aeqd(xArray,yArray,lonOrigin,latOrigin)
+
+    ref = grid.fields['reflectivity']['data'][0];
+    ref = np.asarray(ref)
+    ref[ref==0.0] = np.nan
+
+    # added in by JJ, assuming [0] means the first level 
+    allRef = grid.fields['reflectivity']['data']
+    allRef = np.asarray(allRef)
+    allRef[allRef==0.0] = np.nan
+
+    # find ref > 40 
+    cores = findcores(ref)
+
+    outMatFile = './outData/nex_{0}_{1}.mat'.format(20110425,1)
+
+    # added allRef to the save variable in matlab to check stuff
+    sio.savemat(outMatFile,{'ref2': ref2, 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef }) 
+
+    pdb.set_trace()
+
+    
+def readFiles(folder,hr,stationList):
+
+    fileList = []
+    folderLen = len(folder)
+    
+    # for each station in hte provided station list run the code
+    for station in stationList:
+
+        # look for all stations given for the date
+        searchString = folder + station + '20110425*_V*'
+        radarFiles = glob.glob(searchString)
+    
+        # if no data is found for the station then skip 
+        if (len(radarFiles) == 0):
+            continue 
+
+        # compute the minimum time difference file and save it to the list
+        minDiff = float('Inf') 
+        minFile = '' 
+        for filename in radarFiles:
+            time_hh = filename[13+folderLen:15+folderLen]
+            time_min = filename[15+folderLen:17+folderLen]
+            time_sec = filename[17+folderLen:19+folderLen]
+            time_hhmin = float(time_hh) + float(time_min)/60. + float(time_sec)/3600.
+            time_diff = abs(hr - time_hhmin)
+            if (time_diff < minDiff and time_diff < float(5./60.)):
+                minDiff = time_diff
+                minFile = filename
+            # print '{0} // {3} --> {1} --> {2}'.format(filename, time_hhmin, time_diff, float(5./60.))
+
+        if (len(minFile) != 0):
+            fileList.append(minFile)
+
+    
+    return fileList
+
+def convToGrid(radarData):
+    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    grid = pyart.map.grid_from_radars(radarData,grid_shape=(12,1000,1000),grid_limits=((0000, 6000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(12,400,400),grid_limits=((0000, 6000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'])
+    return grid
+
 
 # reading in one nexrad file and plotting the figures
-def runfile(folder, file1):
-    fullfile1 = folder + file1
-
-    print fullfile1
-    print fullfile2
-
-    radar1 = pyart.io.read_nexrad_archive(fullfile1)
-    radar2 = pyart.io.read_nexrad_archive(fullfile2)
-    
-    time_hh = file1[13:15]
-    time_min = file1[15:17]
-    time_sec = file1[17:19]
-
-    # for key in radar.fields.keys():
-    #     print key
-
-    # coh_pwr = copy.deepcopy(radar.fields['differential_phase'])
-    # coh_pwr['data'] = coh_pwr['data']*0.+1.
-    # radar.fields['normalized_coherent_power'] = coh_pwr
-
-    # print 'normalized coherent power'
-    # phidp, kdp = pyart.correct.phase_proc_lp(radar, 0.0, debug=True)
-    # radar.add_field('kdp', kdp)
-
-    # refData = radar.fields['reflectivity']
-    # kdp = radar.fields['differential_phase']
+def runfile(grid,date,timeStep):
    
-    # print 'pyart regridding'
-
-    # grid = pyart.map.grid_from_radars((radar1,radar2,),grid_shape=(1,241,241),grid_limits=((2000, 2000), (-123000.0, 123000.0), (-123000.0, 123000.0)),fields=['reflectivity'])
-    grid = pyart.map.grid_from_radars((radar1,radar2,),grid_shape=(1,482,482),grid_limits=((2000, 2000), (-246000.0, 500000.0), (-246000.0, 500000.0)),fields=['reflectivity'])
-
     axInfo =  grid.axes
 
     latOrigin = axInfo['lat']['data']
@@ -76,66 +124,25 @@ def runfile(folder, file1):
 
     lon,lat = pyart.core.cartesian_to_geographic_aeqd(xArray,yArray,lonOrigin,latOrigin)
 
-    # grid = pyart.map.grid_from_radars(radar,(30,400,400), ((0.,15000.),(-200000.,200000.),(-200000.,200000.)), fields=['differential_phase','reflectivity','kdp'], refl_field='reflectivity',roi_func='dist_beam',h_factor=0.,nb=0.5,bsp=1.,min_radius=502)
-
-    # grid = pyart.map.grid_from_radars(radar,(30,400,400), ((0.,15000.),(-200000.,200000.),(-200000.,200000.)), fields=['reflectivity'], refl_field='reflectivity',roi_func='dist_beam',h_factor=0.,nb=0.5,bsp=1.,min_radius=502)
-
-    # kdp = grid.fields['kdp']['data'][0];
-    ref = grid.fields['reflectivity']['data'][0];
+    # reading in the 4th vertical structure of the data
+    # editted by JJ after, maybe error, was 0
+    ref = grid.fields['reflectivity']['data'][4];
     ref = np.asarray(ref)
     ref[ref==0.0] = np.nan
+
+    # added in by JJ, assuming [0] means the first level 
+    allRef = grid.fields['reflectivity']['data']
+    allRef = np.asarray(allRef) 
+    allRef[allRef == 0.0] = np.nan
 
     # find ref > 40 
     cores = findcores(ref)
 
-    # print 'pyart plotting'
+    outMatFile = './outData/nex_{0}_{1}.mat'.format(date,timeStep)
 
-    outMatFile = './outData/' + file1 + '_' + file2 + '.mat'
-    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores']}) 
 
-    fig = plt.figure()
-
-    ax = fig.add_subplot(221)
-    CS = plt.pcolor(lon,lat,ref,cmap=plt.cm.hot,vmin=0,vmax=64)
-    # ax.imshow(ref,origin='lower'); 
-    cbar = plt.colorbar(CS)
-    plt.title('Reflectivity (dBZ)')
-    ax.tick_params(axis='both',which='major',labelsize=7)
-    ax.tick_params(axis='both',which='minor',labelsize=7)
-
-    ax = fig.add_subplot(222)
-    CS = plt.pcolor(cores['backAvg'],cmap=plt.cm.hot,vmin=0,vmax=64)
-    cbar = plt.colorbar(CS)
-    cbar.ax.set_ylabel('Background Mean (dBZ)')
-
-    ax = fig.add_subplot(222)
-    CS = plt.pcolor(lon,lat,cores['ref40'],cmap=plt.cm.cool,vmin=0,vmax=1)
-    cbar = plt.colorbar(CS)
-    plt.title('Reflectivity > 40 dBz')
-    ax.tick_params(axis='both',which='major',labelsize=7)
-    ax.tick_params(axis='both',which='minor',labelsize=7)
-
-    ax = fig.add_subplot(223)
-    CS = plt.pcolor(lon,lat,cores['corebg'],cmap=plt.cm.cool,vmin=0,vmax=1)
-    cbar = plt.colorbar(CS)
-    plt.title('Background Comp Core')
-    ax.tick_params(axis='both',which='major',labelsize=7)
-    ax.tick_params(axis='both',which='minor',labelsize=7)
-
-    ax = fig.add_subplot(224)
-    CS = plt.pcolor(lon,lat,cores['cores'],cmap=plt.cm.cool,vmin=0,vmax=1)
-    cbar = plt.colorbar(CS)
-    plt.title('Final Core Selection')
-    ax.tick_params(axis='both',which='major',labelsize=7)
-    ax.tick_params(axis='both',which='minor',labelsize=7)
-
-    fig.suptitle("2011-04-25 (%s:%s:%s)" % (time_hh,time_min,time_sec))
-
-    fig.savefig('./images/' + file1 + '_' + file2 + '.png')
-    plt.close(fig)
-
-    print ('Completed ' + file1 +'_' + file2)
-    # plt.show()
+    # added allRef to the save variable in matlab to check stuff
+    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef }) 
 
 
 def findcores(ref): 

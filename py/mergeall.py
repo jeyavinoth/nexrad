@@ -10,6 +10,7 @@ import copy
 import math
 import os
 import glob
+import pdb
 
 # global sample file
 
@@ -26,6 +27,9 @@ def main():
         grid = convToGrid(radarInfo['radarData'])
         runfile(grid,'20110425',timeStep)
         print 'Completed {0}'.format(timeStep)
+        break; 
+
+    pdb.set_trace()
     
 def readData(folder,hr,stationList):
 
@@ -72,7 +76,9 @@ def readData(folder,hr,stationList):
     return {'radarData': radarData, 'hh': str(hr), 'min': '00', 'sec': '00'}
 
 def convToGrid(radarData):
-    grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    grid = pyart.map.grid_from_radars(radarData,grid_shape=(30,1000,1000),grid_limits=((0000, 15000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(30,400,400),grid_limits=((0000, 15000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'])
     return grid
 
 
@@ -90,15 +96,24 @@ def runfile(grid,date,timeStep):
 
     lon,lat = pyart.core.cartesian_to_geographic_aeqd(xArray,yArray,lonOrigin,latOrigin)
 
-    ref = grid.fields['reflectivity']['data'][0];
+    # reading in the 4th vertical structure of the data
+    # editted by JJ after, maybe error, was 0
+    ref = grid.fields['reflectivity']['data'][4];
     ref = np.asarray(ref)
     ref[ref==0.0] = np.nan
+
+    # added in by JJ, assuming [0] means the first level 
+    allRef = grid.fields['reflectivity']['data']
+    allRef = np.asarray(allRef)
+    allRef[allRef==0.0] = np.nan
 
     # find ref > 40 
     cores = findcores(ref)
 
     outMatFile = './outData/nex_{0}_{1}.mat'.format(date,timeStep)
-    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores']}) 
+
+    # added allRef to the save variable in matlab to check stuff
+    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef }) 
 
 
 def findcores(ref): 
