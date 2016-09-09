@@ -32,8 +32,11 @@ for timeStep = timeStepList
   latMin = min(data.lat); latMax = max(data.lat); 
   lonMin = min(data.lon); lonMax = max(data.lon); 
 
+  latMin = 32; latMax = 40; 
+  lonMin = -96; lonMax = -90; 
+
   % manual setup lon/lat range
-  lonMax = -88; 
+  % lonMax = -88; 
 
   % testing cleaning out the data
   raindata(raindata == 0) = NaN; 
@@ -49,7 +52,8 @@ for timeStep = timeStepList
   m_pcolor(lonGrid,latGrid,data.ref); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+  m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
   % axis([lonMin lonMax latMin latMax]); 
   caxis([0 60]); 
   title('Reflectivity (dBz)'); 
@@ -60,7 +64,8 @@ for timeStep = timeStepList
   m_pcolor(lon,lat,raindata); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+  m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
   % axis([lonMin lonMax latMin latMax]); 
   caxis([0 20]);
   title('Stage 4 data');
@@ -71,7 +76,8 @@ for timeStep = timeStepList
   m_pcolor(lonGrid,latGrid,data.cores_40); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+  m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
   % axis([lonMin lonMax latMin latMax]); 
   caxis([0 1])
   title('Cores (> 40 dBz)');
@@ -79,14 +85,15 @@ for timeStep = timeStepList
 
   ax4 = subplot(2,2,4);
   m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-  m_pcolor(lonGrid,latGrid,data.cores_bg); shading flat; colorbar; 
+  m_pcolor(lonGrid,latGrid,data.cores3d); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+  m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
   % axis([lonMin lonMax latMin latMax]); 
   caxis([0 1])
   % title('Final Core Selection');
-  title('Core Background');
+  title('Core using vertical profile');
   colormap(ax4,'cool')
 
   suptitle(sprintf('2011/04/25 @ %02dH',timeStep)); 

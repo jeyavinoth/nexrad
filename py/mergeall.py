@@ -10,37 +10,40 @@ import copy
 import math
 import os
 import glob
-import pdb
+# import pdb
 
 # global sample file
 
 # main function to read in all the necessary nexrad data 
 def main():
-    folder = '/mnt/drive4/nexrad/20110425/'
-    stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
+    # folder = '/mnt/drive4/nexrad/20110425/'
+    # stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
+    selectDate = '20150608'
+    folder = '/mnt/drive4/nexrad/' + selectDate + '/'
+    stationList = ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ'];
 
     timeStepList = range(1,25)
+    timeStepList = range(10,25)
     # timeStepList = range(9,10)
 
     for timeStep in timeStepList:
         radarInfo = readData(folder,timeStep,stationList)
         grid = convToGrid(radarInfo['radarData'])
-        runfile(grid,'20110425',timeStep)
+        runfile(grid,selectDate,timeStep)
         print 'Completed {0}'.format(timeStep)
-        break; 
 
-    pdb.set_trace()
+    # pdb.set_trace()
     
 def readData(folder,hr,stationList):
 
     fileList = []
-    folderLen = len(folder)
+    folderLen = len(folder) + 5
     
     # for each station in hte provided station list run the code
     for station in stationList:
 
         # look for all stations given for the date
-        searchString = folder + station + '20110425*_V*'
+        searchString = folder + station + '/' + station + '*_V*'
         radarFiles = glob.glob(searchString)
     
         # if no data is found for the station then skip 
@@ -105,16 +108,46 @@ def runfile(grid,date,timeStep):
     # added in by JJ, assuming [0] means the first level 
     allRef = grid.fields['reflectivity']['data']
     allRef = np.asarray(allRef)
-    allRef[allRef==0.0] = np.nan
+    # allRef[allRef==0.0 | allRef==-9999.0] = np.nan
+    allRef[np.logical_or(allRef == 0.0, allRef == -9999.)] = np.nan
 
     # find ref > 40 
     cores = findcores(ref)
 
-    outMatFile = './outData/nex_{0}_{1}.mat'.format(date,timeStep)
+    cores_3d = findcores3d(allRef)
+
+    outMatFile = './outData/{0}/nex_{1}_{2}.mat'.format(date,date,timeStep)
 
     # added allRef to the save variable in matlab to check stuff
-    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef }) 
+    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef , 'cores3d':cores_3d})
 
+    # pdb.set_trace()
+
+# finding cores depending on 3d profile 
+def findcores3d(allRef): 
+   
+    arrSize = allRef.shape 
+    cores = np.full((arrSize[1], arrSize[2]),0)
+
+    for i in np.arange(0,arrSize[1]):
+        for j in np.arange(0,arrSize[2]):
+            profile = allRef[:,i,j]
+            
+            # find if there is a value of < 40dbz on the column from 2 - 6km (5 - 11 index)
+            noVal = 0
+            haveVal = 0
+            for k in np.arange(5,12):
+                if (np.isnan(profile[k])):
+                    continue;
+                if (profile[k] < 40.):
+                    noVal = 1
+                else: 
+                    haveVal = 1
+
+            if (noVal != 1 and haveVal == 1):
+                cores[i,j] = 1
+
+    return cores
 
 def findcores(ref): 
 
