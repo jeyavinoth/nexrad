@@ -1,7 +1,7 @@
 close; 
 clear; 
 
-load ./nex_20110425_1.mat
+load '../py/outData/20150608/nex_20150608_1.mat'
 % load test.mat
 
 %{
@@ -83,7 +83,16 @@ for i = 1:length(core40)
   %   continue; 
   % end
 
-  selectRange = [-93.33 -93.31 35.29 35.31];
+  % % temp lat & lon range 
+  % lonRange = [-94 -93]; 
+  % latRange = [35 36]; 
+  % selectRange = [-93.33 -93.31 35.29 35.31];
+
+
+  lonRange = [-88 -81];
+  latRange = [38 44]; 
+  selectRange = [-86 -84 40 41];
+
   if (~(latGrid(ind)>selectRange(3) & latGrid(ind)<selectRange(4) & lonGrid(ind)>selectRange(1) & lonGrid(ind)<selectRange(2)))
     continue; 
   end
@@ -92,15 +101,8 @@ for i = 1:length(core40)
   lon_profile = squeeze(allRef(:,x,:)); 
   lat_profile = squeeze(allRef(:,:,y));
 
-  % temp lat & lon range 
-  lonRange = [-94 -93]; 
-  latRange = [35 36]; 
-
-  % lonRange = [-95 -90];
-  % latRange = [35 40]; 
-
-  lonRange = [min(lonGrid(:)) max(lonGrid(:))]; 
-  latRange = [min(latGrid(:)) max(latGrid(:))]; 
+  % lonRange = [min(lonGrid(:)) max(lonGrid(:))]; 
+  % latRange = [min(latGrid(:)) max(latGrid(:))]; 
 
   ax1 = subplot(2,2,1); 
   pcolor(lonGrid,latGrid,ref_2km); shading flat; colorbar; caxis([0 60])

@@ -20,11 +20,16 @@ def main():
     # stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
     selectDate = '20150608'
     folder = '/mnt/drive4/nexrad/' + selectDate + '/'
-    stationList = ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ'];
+    # stationList = ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ'];
+
+    # stationList =  ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ','KMQT','KAPX','KGRR','KDTX','KGRB','KMKX','KLOT','KIWX','KILX','KIND','KILN','KPBZ','KRLX','KJKL','KLVX','KLSX','KHPX','KPAH','KOHX','KVWX','KFCX'];
+    
+    stationList =  ['KAKQ','KMQT','KAPX','KGRR','KDTX','KGRB','KMKX','KLOT','KIWX','KILX','KIND','KILN','KPBZ','KRLX','KJKL','KLVX','KLSX','KHPX','KPAH','KOHX','KVWX','KFCX'];
 
     timeStepList = range(1,25)
-    timeStepList = range(10,25)
+    # timeStepList = range(10,25)
     # timeStepList = range(9,10)
+    timeStepList = range(4,25)
 
     for timeStep in timeStepList:
         radarInfo = readData(folder,timeStep,stationList)
@@ -71,7 +76,12 @@ def readData(folder,hr,stationList):
     radarData = []
     cnt = 0
     for filename in fileList: 
-        radar = pyart.io.read_nexrad_archive(filename)
+        try: 
+            radar = pyart.io.read_nexrad_archive(filename)
+        except:
+            print ('Cannot read {0}'.format(filename))
+            continue; 
+
         radarData.append(radar)
         cnt = cnt + 1
         print ('Completed {0}'.format(filename))
