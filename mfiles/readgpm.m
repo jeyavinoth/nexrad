@@ -1,6 +1,7 @@
 function data = readgpm(yySelect,mmSelect,ddSelect,hhSelect,swathSelect)
+
   % reading gpm data from the server /mnt/drive2/gpmdata/
-  % ex: data = readgpm(2015,06,08,01,'NS')
+  % example: data = readgpm(2015,06,08,02,'NS')
 
   % % select date
   % yySelect = 2014; 

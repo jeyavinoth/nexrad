@@ -29,7 +29,9 @@ def main():
     timeStepList = range(1,25)
     # timeStepList = range(10,25)
     # timeStepList = range(9,10)
-    timeStepList = range(4,25)
+    # timeStepList = range(4,25)
+    # timeStepList = range(17,25)
+    timeStepList = range(9,17)
 
     for timeStep in timeStepList:
         radarInfo = readData(folder,timeStep,stationList)
