@@ -30,8 +30,8 @@ def main():
     # stationList = ['KIND', 'KRLX', 'KJKL', 'KPAH', 'KVWX', 'KPBZ', 'KMRX', 'KLVX', 'KBMX', 'KHTX', 'KGWX', 'KCAE', 'KFCX', 'KILN', 'KGSP', 'KOHX', 'KHPX', 'KFFC']; 
 
     # stations for storm on 2015/08/11
-    # selectDate = '20150811'
-    # stationList = ['KBGM', 'KCXX', 'KBOX', 'KDIX', 'KENX', 'KDOX', 'KGYX', 'KTYX', 'KOKX']
+    selectDate = '20150811'
+    stationList = ['KBGM', 'KCXX', 'KBOX', 'KDIX', 'KENX', 'KDOX', 'KGYX', 'KTYX', 'KOKX']
 
     # # stations for storm on 2015/09/19
     # selectDate = '20150910'
@@ -52,8 +52,9 @@ def main():
 
     folder = '/mnt/drive4/nexrad/' + selectDate + '/'
 
-    timeStepList = range(1,25)
-    timeStepList = range(9,17)
+    # timeStepList = range(1,25)
+    # timeStepList = range(9,17)
+    timeStepList = [13,21]
 
     for timeStep in timeStepList:
         radarInfo = readData(folder,timeStep,stationList)

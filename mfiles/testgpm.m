@@ -9,13 +9,13 @@ close all;
 % timeStepList = 1:7;
 % timeStepList = 13:24;
 % timeStepList = 1:23; 
-timeStepList = 1:24; 
+timeStepList = 2:24; 
 
 % selectDate = [2015,06,08]; 
 % selectRange = [33,41,-89,-79]; 
 
-selectDate = [2015,08,11]; 
-selectRange = [36,46,-77,-64]; 
+% selectDate = [2015,08,11]; 
+% selectRange = [36,46,-77,-64]; 
 
 % selectDate = [2015,09,19]; 
 % selectRange = [39,44,-90,-83]; 
@@ -26,18 +26,18 @@ selectRange = [36,46,-77,-64];
 % selectDate = [2015,10,28]; 
 % selectRange = [35,43,-88,-80]; 
 
-% selectDate = [2015,11,18]; 
-% selectRange = [32,41,-88,-83]; 
+selectDate = [2015,11,18]; 
+selectRange = [32,41,-88,-83]; 
 
 for timeStep = timeStepList
 
   % stageFile = fullfile(stageFolder,sprintf('ST4.20110425%02d.01h',timeStep)); 
-    try
+    % try
       gpmData = readgpm(selectDate(1),selectDate(2),selectDate(3),timeStep,'NS'); 
-    catch
-      disp(sprintf('Cannot find file for timestep %02d',timeStep)); 
-      continue; 
-    end
+    % catch
+      % disp(sprintf('Cannot find file for timestep %02d',timeStep)); 
+      % continue; 
+    % end
 
     % radar = ncgeodataset(stageFile); 
     % rain = radar.geovariable(radar.variables(3)); 

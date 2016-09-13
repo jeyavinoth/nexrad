@@ -4,13 +4,38 @@ close all;
 
 setup_nctoolbox
 
-stageFolder = '/mnt/drive1/jj/nexrad/data/stage4/2011/';
-timeStepList = 17; 
+stageFolder = '/mnt/drive4/stage4/2015/';
+
+% selectDate = [2015,06,08]; 
+% cdtRange = [33, 41, -89, -78]; 
+% timeStepList = [8,17]; 
+
+selectDate = [2015,08,11]; 
+cdtRange = [36,46,-77.-64]; 
+timeStepList = [13,21]; 
+
+% selectDate = [2015,09,19]; 
+% cdtRange = [39,44,-93,-83]; 
+% timeStepList = [03]; 
+
+% selectDate = [2015,09,30]; 
+% cdtRange = [35,49,-81,60]; 
+% timeStepList = [07,22,23]; 
+
+% selectDate = [2015,10,28]; 
+% cdtRange = [35,43,-88,-80]; 
+% timeStepList = [15,16,23]; 
+
+% selectDate = [2015,11,18]; 
+% cdtRange = [32,41,-88,-83]; 
+% timeStepList = [17,18]; 
+
+dateString = sprintf('%04d%02d%02d',selectDate(1),selectDate(2),selectDate(3)); 
 
 for timeStep = timeStepList
 
-  % stageFile = fullfile(stageFolder,sprintf('ST4.20110425%02d.01h',timeStep)); 
-    gpmData = readgpm(2015,06,08,timeStep,'NS'); 
+    stageFile = fullfile(stageFolder,sprintf('ST4.%s%02d.01h',dateString,timeStep)); 
+    gpmData = readgpm(selectDate(1),selectDate(2),selectDate(3),timeStep,'NS'); 
 
     radar = ncgeodataset(stageFile); 
     rain = radar.geovariable(radar.variables(3)); 
@@ -30,9 +55,9 @@ for timeStep = timeStepList
     
 
 
-  folder = '/mnt/drive1/jj/nexrad/src/py/outData/20150608/';
+  folder = sprintf('/mnt/drive1/jj/nexrad/src/py/outData/%s/',dateString);
 
-  file = fullfile(folder,sprintf('nex_20150608_%d.mat',timeStep)); 
+  file = fullfile(folder,sprintf('nex_%s_%d.mat',dateString,timeStep)); 
   data = load(file); 
 
   [lonGrid, latGrid] = meshgrid(data.lon,data.lat); 
@@ -40,8 +65,11 @@ for timeStep = timeStepList
   latMin = min(data.lat); latMax = max(data.lat); 
   lonMin = min(data.lon); lonMax = max(data.lon); 
 
-  latMin = 36; latMax = 40; 
-  lonMin = -85; lonMax = -81; 
+  % latMin = 36; latMax = 40; 
+  % lonMin = -85; lonMax = -81; 
+  
+  latMin = cdtRange(1); latMax = cdtRange(2); 
+  lonMin = cdtRange(3); lonMax = cdtRange(4); 
 
   % manual setup lon/lat range
   % lonMax = -88; 
@@ -72,8 +100,8 @@ for timeStep = timeStepList
   m_coast('color','k');
   % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
   % m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
-  % m_grid('box','fancy','tickdir','in'); 
-  m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  m_grid('box','fancy','tickdir','in'); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
   % axis([lonMin lonMax latMin latMax]); 
   caxis([0 60]); 
   title('Ref @ 0.5km (dBz)'); 
@@ -84,7 +112,8 @@ for timeStep = timeStepList
   m_pcolor(gpmLon,gpmLat,precipRate); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  m_grid('box','fancy','tickdir','in'); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
   caxis([0 5]);
   title('GPM Precip Rate');
   colormap(ax2,'jet')
@@ -94,17 +123,19 @@ for timeStep = timeStepList
   m_pcolor(lon,lat,raindata); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-  caxis([0 40])
-  title('Precip Type from GPM');
-  colormap(ax3,'cool')
+  m_grid('box','fancy','tickdir','in'); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  caxis([0 20])
+  title('Stage 4');
+  colormap(ax3,'jet')
 
   ax4 = subplot(2,3,4);
   m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
   m_pcolor(gpmLon,gpmLat,precipType); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  m_grid('box','fancy','tickdir','in'); 
   caxis([1 2])
   title('Precip Type from GPM');
   colormap(ax4,'cool')
@@ -114,7 +145,8 @@ for timeStep = timeStepList
   m_pcolor(lonGrid,latGrid,testCore); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  m_grid('box','fancy','tickdir','in'); 
   caxis([0 1])
   title('Core using vertical profile');
   colormap(ax5,'cool')
@@ -134,7 +166,8 @@ for timeStep = timeStepList
   m_pcolor(lonGrid,latGrid,data.cores); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  m_grid('box','fancy','tickdir','in'); 
   caxis([0 1])
   title('Steiner core selection');
   colormap(ax6,'cool')
@@ -142,7 +175,11 @@ for timeStep = timeStepList
   suptitle(sprintf('2015/06/08 @ %02dH',timeStep)); 
 
   orient portrait
-  print('-dpng','-r500',sprintf('./images/20150608/img_20150608_%02d.png',timeStep)); 
+
+  if (exist(sprintf('./images/%s',dateString)) == 0)
+    mkdir('./images/',dateString); 
+  end
+  print('-dpng','-r500',sprintf('./images/%s/img_%s_%02d.png',dateString,dateString,timeStep)); 
   close all; 
  
 end
