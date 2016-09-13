@@ -18,19 +18,41 @@ import glob
 def main():
     # folder = '/mnt/drive4/nexrad/20110425/'
     # stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
-    selectDate = '20150608'
-    folder = '/mnt/drive4/nexrad/' + selectDate + '/'
     # stationList = ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ'];
 
     # stationList =  ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ','KMQT','KAPX','KGRR','KDTX','KGRB','KMKX','KLOT','KIWX','KILX','KIND','KILN','KPBZ','KRLX','KJKL','KLVX','KLSX','KHPX','KPAH','KOHX','KVWX','KFCX'];
+   
     
-    stationList =  ['KAKQ','KMQT','KAPX','KGRR','KDTX','KGRB','KMKX','KLOT','KIWX','KILX','KIND','KILN','KPBZ','KRLX','KJKL','KLVX','KLSX','KHPX','KPAH','KOHX','KVWX','KFCX'];
+    # stationList = ['KAKQ','KMQT','KAPX','KGRR','KDTX','KGRB','KMKX','KLOT','KIWX','KILX','KIND','KILN','KPBZ','KRLX','KJKL','KLVX','KLSX','KHPX','KPAH','KOHX','KVWX','KFCX'];
+
+    # #stations for storm on 2015/06/08
+    # selectDate = '20150608'
+    # stationList = ['KIND', 'KRLX', 'KJKL', 'KPAH', 'KVWX', 'KPBZ', 'KMRX', 'KLVX', 'KBMX', 'KHTX', 'KGWX', 'KCAE', 'KFCX', 'KILN', 'KGSP', 'KOHX', 'KHPX', 'KFFC']; 
+
+    # stations for storm on 2015/08/11
+    # selectDate = '20150811'
+    # stationList = ['KBGM', 'KCXX', 'KBOX', 'KDIX', 'KENX', 'KDOX', 'KGYX', 'KTYX', 'KOKX']
+
+    # # stations for storm on 2015/09/19
+    # selectDate = '20150910'
+    # stationList = ['KILX', 'KIND', 'KGRR', 'KMKX', 'KLOT', 'KDTX', 'KIWX', 'KILN']; 
+
+    # # stations for storm on 2015/09/30
+    # selectDate = '20150930'
+    # stationList = ['KBGM', 'KCXX', 'KLWX', 'KPBZ', 'KBOX', 'KTYX', 'KCCX', 'KAKQ', 'KDIX', 'KBUF', 'KRAX', 'KENX', 'KOKX', 'KDOX', 'KGYX', 'KFCX', 'KCBW']; 
+
+    # # stations for storm on 2015/10/28
+    # selectDate = '20151028'
+    # siteList = ['KIND', 'KRLX', 'KILN', 'KVWX', 'KDTX', 'KLVX', 'KIWX', 'KPBZ', 'KMRX', 'KGRR', 'KJKL', 'KOHX', 'KHPX', 'KFCX', 'KCLE']; 
+
+    # # stations for storm on 2015/11/18
+    # selectDate = '20151118'
+    # siteList = ['KIND', 'KJKL', 'KMXX', 'KVWX', 'KJGX', 'KLVX', 'KBMX', 'KHTX', 'KMRX', 'KILN', 'KOHX', 'KHPX', 'KFFC']; 
+
+
+    folder = '/mnt/drive4/nexrad/' + selectDate + '/'
 
     timeStepList = range(1,25)
-    # timeStepList = range(10,25)
-    # timeStepList = range(9,10)
-    # timeStepList = range(4,25)
-    # timeStepList = range(17,25)
     timeStepList = range(9,17)
 
     for timeStep in timeStepList:

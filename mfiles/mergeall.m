@@ -12,12 +12,12 @@ for timeStep = timeStepList
   % stageFile = fullfile(stageFolder,sprintf('ST4.20110425%02d.01h',timeStep)); 
     gpmData = readgpm(2015,06,08,timeStep,'NS'); 
 
-    % radar = ncgeodataset(stageFile); 
-    % rain = radar.geovariable(radar.variables(3)); 
-    % grid = rain.grid_interop(1,:,:); 
-    % lat(:,:) = grid.lat; 
-    % lon(:,:) = grid.lon; 
-    % raindata(:,:) = double(rain.data(1,:,:)); 
+    radar = ncgeodataset(stageFile); 
+    rain = radar.geovariable(radar.variables(3)); 
+    grid = rain.grid_interop(1,:,:); 
+    lat(:,:) = grid.lat; 
+    lon(:,:) = grid.lon; 
+    raindata(:,:) = double(rain.data(1,:,:)); 
 
     gpmLat = gpmData.lat; 
     gpmLon = gpmData.lon; 
@@ -91,15 +91,25 @@ for timeStep = timeStepList
 
   ax3 = subplot(2,3,3);
   m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
+  m_pcolor(lon,lat,raindata); shading flat; colorbar; 
+  hold on; 
+  m_coast('color','k');
+  m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  caxis([0 40])
+  title('Precip Type from GPM');
+  colormap(ax3,'cool')
+
+  ax4 = subplot(2,3,4);
+  m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
   m_pcolor(gpmLon,gpmLat,precipType); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
   m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
   caxis([1 2])
   title('Precip Type from GPM');
-  colormap(ax3,'cool')
+  colormap(ax4,'cool')
 
-  ax4 = subplot(2,3,4);
+  ax5 = subplot(2,3,5);
   m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
   m_pcolor(lonGrid,latGrid,testCore); shading flat; colorbar; 
   hold on; 
@@ -107,19 +117,19 @@ for timeStep = timeStepList
   m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
   caxis([0 1])
   title('Core using vertical profile');
-  colormap(ax4,'cool')
-
-  ax5 = subplot(2,3,5);
-  m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-  m_pcolor(lonGrid,latGrid,double(ref_surf > 40)); shading flat; colorbar; 
-  hold on; 
-  m_coast('color','k');
-  m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-  caxis([0 1])
-  title('Cores (40dBz @ 0.5km)');
   colormap(ax5,'cool')
 
-  ax5 = subplot(2,3,6);
+  % ax5 = subplot(2,3,5);
+  % m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
+  % m_pcolor(lonGrid,latGrid,double(ref_surf > 40)); shading flat; colorbar; 
+  % hold on; 
+  % m_coast('color','k');
+  % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+  % caxis([0 1])
+  % title('Cores (40dBz @ 0.5km)');
+  % colormap(ax5,'cool')
+
+  ax6 = subplot(2,3,6);
   m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
   m_pcolor(lonGrid,latGrid,data.cores); shading flat; colorbar; 
   hold on; 
@@ -127,7 +137,7 @@ for timeStep = timeStepList
   m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
   caxis([0 1])
   title('Steiner core selection');
-  colormap(ax5,'cool')
+  colormap(ax6,'cool')
 
   suptitle(sprintf('2015/06/08 @ %02dH',timeStep)); 
 
