@@ -1,7 +1,7 @@
-close; 
 clear; 
+figure(1)
 
-load '../py/outData/20150608/nex_20150608_1.mat'
+load '../py/outData/20150919/nex_20150919_3.mat'
 % load test.mat
 
 %{
@@ -19,6 +19,7 @@ for i = 1:12
 end
 %}
 
+%{
 % finding the cores of the data
 cores3d_test = zeros(size(allRef,2),size(allRef,3));
 allRef(allRef == -9999) = NaN; 
@@ -41,20 +42,22 @@ for i = 1:size(allRef,2)
         haveVal = 1; 
       end
     end
-
     if (noVal ~= 1 & haveVal == 1)
       cores3d_test(i,j) = 1; 
     end
 
   end
 end
-
+%}
 
 [lonGrid, latGrid] = meshgrid(lon,lat); 
 
 
 latMin = min(lat); latMax = max(lat); 
 lonMin = min(lon); lonMax = max(lon); 
+selectRange = [latMin latMax lonMin lonMax]; 
+lonRange = [lonMin lonMax]; 
+latRange = [latMin latMax]; 
 
 temp = nan(size(allRef,2),size(allRef,3),size(allRef,1)); 
 
@@ -70,13 +73,20 @@ heightSize = size(allRef,1);
 
 hTemp = repmat(0:0.5:-0.5+heightSize/2,radarSize,1)'; 
 
+  % find cores using Johnny's method of finding convection over 6km 
+  temp = allRef(12:end,:,:); 
+  temp40 = double(temp >= 20); 
+  temp40 = squeeze(nansum(temp40,1)); 
+  testCore = double(temp40 > 1); 
 
-core40 = find(ref_2km > 40); 
-[xAll,yAll] = ind2sub(size(ref),core40); 
+% coreSelect = find(ref_2km  >= 40); 
+% testCore = (ref_2km > 40); 
+coreSelect = find(testCore==1); 
+[xAll,yAll] = ind2sub(size(ref),coreSelect); 
 
-for i = 1:length(core40)
+for i = 1:length(coreSelect)
 
-  ind = core40(i); 
+  ind = coreSelect(i); 
   [x,y] = ind2sub(size(ref),ind); 
 
   % if (~(latGrid(ind)>37.2 & latGrid(ind)<37.3 & lonGrid(ind)>-92 & lonGrid(ind)<-91))
@@ -89,11 +99,11 @@ for i = 1:length(core40)
   % selectRange = [-93.33 -93.31 35.29 35.31];
 
 
-  lonRange = [-88 -81];
-  latRange = [38 44]; 
-  selectRange = [-86 -84 40 41];
+  lonRange = [-87 -84];
+  latRange = [39 42]; 
+  selectRange = [40.8 41 -86.2 -86];
 
-  if (~(latGrid(ind)>selectRange(3) & latGrid(ind)<selectRange(4) & lonGrid(ind)>selectRange(1) & lonGrid(ind)<selectRange(2)))
+  if (~(latGrid(ind)>selectRange(1) & latGrid(ind)<selectRange(2) & lonGrid(ind)>selectRange(3) & lonGrid(ind)<selectRange(4)))
     continue; 
   end
   
@@ -138,12 +148,12 @@ for i = 1:length(core40)
   colormap(ax3,'jet'); 
 
   ax4 = subplot(2,2,4); 
-  pcolor(lonGrid,latGrid,cores3d); shading flat; colorbar; caxis([0 1])
+  pcolor(lonGrid,latGrid,testCore); shading flat; colorbar; caxis([0 1])
   hold on; 
   plot(lon(1:radarSize),lat(repmat(x,1,radarSize)),'r--');
   plot(lon(repmat(y,1,radarSize)),lat(1:radarSize),'r--');
   axis([lonRange latRange]); 
-  title('Cores using 40dbz columns')
+  title('Core Selection')
   xlabel('Longitude'); 
   ylabel('Latitude'); 
   colormap(ax4,'cool');
@@ -153,5 +163,5 @@ end
 
 colormap(jet);
 
-orient portrait
-print ('-dpng','-r500','test.png');
+% orient portrait
+% print ('-dpng','-r500','test.png');
