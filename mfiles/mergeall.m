@@ -3,20 +3,25 @@ clear;
 close all; 
 
 setup_nctoolbox
+make_16_gray
 
 stageFolder = '/mnt/drive4/stage4/2015/';
+
+xtickarray = [];  
 
 % selectDate = [2015,06,08]; 
 % cdtRange = [33, 41, -89, -78]; 
 % timeStepList = [8,17]; 
 
-selectDate = [2015,08,11]; 
-cdtRange = [36,46,-77.-64]; 
-timeStepList = [13,21]; 
+% selectDate = [2015,08,11]; 
+% cdtRange = [36,46,-77,-64]; 
+% timeStepList = [13,21]; 
 
-% selectDate = [2015,09,19]; 
-% cdtRange = [39,44,-93,-83]; 
-% timeStepList = [03]; 
+
+selectDate = [2015,09,19]; 
+cdtRange = [39,44,-93,-83]; 
+timeStepList = [03]; 
+xtickarray = [-92, -88, -84]; 
 
 % selectDate = [2015,09,30]; 
 % cdtRange = [35,49,-81,60]; 
@@ -89,7 +94,7 @@ for timeStep = timeStepList
 
   % find cores using Johnny's method of finding convection over 6km 
   temp = data.allRef(12:end,:,:); 
-  temp40 = double(temp >= 40); 
+  temp40 = double(temp >= 20); 
   temp40 = squeeze(nansum(temp40,1)); 
   testCore = double(temp40 > 1); 
 
@@ -100,7 +105,8 @@ for timeStep = timeStepList
   m_coast('color','k');
   % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
   % m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
-  m_grid('box','fancy','tickdir','in'); 
+  % m_grid('box','fancy','tickdir','in'); 
+  m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
   % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
   % axis([lonMin lonMax latMin latMax]); 
   caxis([0 60]); 
@@ -112,22 +118,24 @@ for timeStep = timeStepList
   m_pcolor(gpmLon,gpmLat,precipRate); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in'); 
+  % m_grid('box','fancy','tickdir','in'); 
+  m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
   % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-  caxis([0 5]);
-  title('GPM Precip Rate');
-  colormap(ax2,'jet')
+  caxis([0 12]);
+  title('GPM Precip Rate [mm/hr]');
+  colormap(ax2,map44)
 
   ax3 = subplot(2,3,3);
   m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
   m_pcolor(lon,lat,raindata); shading flat; colorbar; 
   hold on; 
   m_coast('color','k');
-  m_grid('box','fancy','tickdir','in'); 
+  % m_grid('box','fancy','tickdir','in'); 
+  m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
   % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-  caxis([0 20])
-  title('Stage 4');
-  colormap(ax3,'jet')
+  caxis([0 12])
+  title('Stage 4 [mm/hr]');
+  colormap(ax3,map44)
 
   ax4 = subplot(2,3,4);
   m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
@@ -135,7 +143,7 @@ for timeStep = timeStepList
   hold on; 
   m_coast('color','k');
   % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-  m_grid('box','fancy','tickdir','in'); 
+  m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
   caxis([1 2])
   title('Precip Type from GPM');
   colormap(ax4,'cool')
@@ -146,7 +154,8 @@ for timeStep = timeStepList
   hold on; 
   m_coast('color','k');
   % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-  m_grid('box','fancy','tickdir','in'); 
+  % m_grid('box','fancy','tickdir','in'); 
+  m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
   caxis([0 1])
   title('Core using vertical profile');
   colormap(ax5,'cool')
@@ -167,12 +176,13 @@ for timeStep = timeStepList
   hold on; 
   m_coast('color','k');
   % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-  m_grid('box','fancy','tickdir','in'); 
+  % m_grid('box','fancy','tickdir','in'); 
+  m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
   caxis([0 1])
-  title('Steiner core selection');
+  title('Steiner* core selection');
   colormap(ax6,'cool')
 
-  suptitle(sprintf('2015/06/08 @ %02dH',timeStep)); 
+  suptitle(sprintf('%d/%02d/%02d @ %02dH',selectDate(1),selectDate(2),selectDate(3),timeStep)); 
 
   orient portrait
 
@@ -180,6 +190,7 @@ for timeStep = timeStepList
     mkdir('./images/',dateString); 
   end
   print('-dpng','-r500',sprintf('./images/%s/img_%s_%02d.png',dateString,dateString,timeStep)); 
+  
   close all; 
  
 end

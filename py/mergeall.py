@@ -28,33 +28,39 @@ def main():
     # #stations for storm on 2015/06/08
     # selectDate = '20150608'
     # stationList = ['KIND', 'KRLX', 'KJKL', 'KPAH', 'KVWX', 'KPBZ', 'KMRX', 'KLVX', 'KBMX', 'KHTX', 'KGWX', 'KCAE', 'KFCX', 'KILN', 'KGSP', 'KOHX', 'KHPX', 'KFFC']; 
+    # timeStepList = [8,17]
 
-    # stations for storm on 2015/08/11
-    selectDate = '20150811'
-    stationList = ['KBGM', 'KCXX', 'KBOX', 'KDIX', 'KENX', 'KDOX', 'KGYX', 'KTYX', 'KOKX']
+    # # stations for storm on 2015/08/11
+    # selectDate = '20150811'
+    # stationList = ['KBGM', 'KCXX', 'KBOX', 'KDIX', 'KENX', 'KDOX', 'KGYX', 'KTYX', 'KOKX']
+    # timeStepList = [13,21]
 
     # # stations for storm on 2015/09/19
-    # selectDate = '20150910'
+    # selectDate = '20150919'
     # stationList = ['KILX', 'KIND', 'KGRR', 'KMKX', 'KLOT', 'KDTX', 'KIWX', 'KILN']; 
+    # timeStepList = [3]
 
     # # stations for storm on 2015/09/30
     # selectDate = '20150930'
     # stationList = ['KBGM', 'KCXX', 'KLWX', 'KPBZ', 'KBOX', 'KTYX', 'KCCX', 'KAKQ', 'KDIX', 'KBUF', 'KRAX', 'KENX', 'KOKX', 'KDOX', 'KGYX', 'KFCX', 'KCBW']; 
+    # timeStepList = [7,22,23]
 
     # # stations for storm on 2015/10/28
     # selectDate = '20151028'
-    # siteList = ['KIND', 'KRLX', 'KILN', 'KVWX', 'KDTX', 'KLVX', 'KIWX', 'KPBZ', 'KMRX', 'KGRR', 'KJKL', 'KOHX', 'KHPX', 'KFCX', 'KCLE']; 
+    # stationList = ['KIND', 'KRLX', 'KILN', 'KVWX', 'KDTX', 'KLVX', 'KIWX', 'KPBZ', 'KMRX', 'KGRR', 'KJKL', 'KOHX', 'KHPX', 'KFCX', 'KCLE']; 
+    # timeStepList = [15,16,23]
 
-    # # stations for storm on 2015/11/18
-    # selectDate = '20151118'
-    # siteList = ['KIND', 'KJKL', 'KMXX', 'KVWX', 'KJGX', 'KLVX', 'KBMX', 'KHTX', 'KMRX', 'KILN', 'KOHX', 'KHPX', 'KFFC']; 
+    # stations for storm on 2015/11/18
+    selectDate = '20151118'
+    stationList = ['KIND', 'KJKL', 'KMXX', 'KVWX', 'KJGX', 'KLVX', 'KBMX', 'KHTX', 'KMRX', 'KILN', 'KOHX', 'KHPX', 'KFFC']; 
+    timeStepList = [17,18]
 
 
     folder = '/mnt/drive4/nexrad/' + selectDate + '/'
 
     # timeStepList = range(1,25)
     # timeStepList = range(9,17)
-    timeStepList = [13,21]
+    # timeStepList = [3]
 
     for timeStep in timeStepList:
         radarInfo = readData(folder,timeStep,stationList)
