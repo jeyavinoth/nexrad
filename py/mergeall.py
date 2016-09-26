@@ -122,8 +122,8 @@ def readData(folder,hr,stationList):
     return {'radarData': radarData, 'hh': str(hr), 'min': '00', 'sec': '00'}
 
 def convToGrid(radarData):
-    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(30,1000,1000),grid_limits=((0000, 15000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
-    grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity','velocity'])
+    grid = pyart.map.grid_from_radars(radarData,grid_shape=(30,1000,1000),grid_limits=((0000, 15000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity','velocity'])
     return grid
 
 
