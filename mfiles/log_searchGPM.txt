@@ -1,0 +1,1 @@
+yyyy mm dd #pixels mean_precip precip_ratio starttime endtime minLat maxLat minLon maxLon

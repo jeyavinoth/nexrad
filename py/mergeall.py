@@ -1,4 +1,5 @@
 import matplotlib
+
 # matplotlib.use('TkAgg')
 
 import pyart
@@ -10,7 +11,7 @@ import copy
 import math
 import os
 import glob
-# import pdb
+import pdb
 
 # global sample file
 
@@ -35,10 +36,11 @@ def main():
     # stationList = ['KBGM', 'KCXX', 'KBOX', 'KDIX', 'KENX', 'KDOX', 'KGYX', 'KTYX', 'KOKX']
     # timeStepList = [13,21]
 
-    # # stations for storm on 2015/09/19
-    # selectDate = '20150919'
-    # stationList = ['KILX', 'KIND', 'KGRR', 'KMKX', 'KLOT', 'KDTX', 'KIWX', 'KILN']; 
-    # timeStepList = [3]
+    # stations for storm on 2015/09/19
+    selectDate = '20150919'
+    stationList = ['KILX', 'KIND', 'KGRR', 'KMKX', 'KLOT', 'KDTX', 'KIWX', 'KILN']; 
+    stationList = ['KILX']; 
+    timeStepList = [3]
 
     # # stations for storm on 2015/09/30
     # selectDate = '20150930'
@@ -50,10 +52,10 @@ def main():
     # stationList = ['KIND', 'KRLX', 'KILN', 'KVWX', 'KDTX', 'KLVX', 'KIWX', 'KPBZ', 'KMRX', 'KGRR', 'KJKL', 'KOHX', 'KHPX', 'KFCX', 'KCLE']; 
     # timeStepList = [15,16,23]
 
-    # stations for storm on 2015/11/18
-    selectDate = '20151118'
-    stationList = ['KIND', 'KJKL', 'KMXX', 'KVWX', 'KJGX', 'KLVX', 'KBMX', 'KHTX', 'KMRX', 'KILN', 'KOHX', 'KHPX', 'KFFC']; 
-    timeStepList = [17,18]
+    # # stations for storm on 2015/11/18
+    # selectDate = '20151118'
+    # stationList = ['KIND', 'KJKL', 'KMXX', 'KVWX', 'KJGX', 'KLVX', 'KBMX', 'KHTX', 'KMRX', 'KILN', 'KOHX', 'KHPX', 'KFFC']; 
+    # timeStepList = [17,18]
 
 
     folder = '/mnt/drive4/nexrad/' + selectDate + '/'
@@ -120,9 +122,8 @@ def readData(folder,hr,stationList):
     return {'radarData': radarData, 'hh': str(hr), 'min': '00', 'sec': '00'}
 
 def convToGrid(radarData):
-    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
-    grid = pyart.map.grid_from_radars(radarData,grid_shape=(30,1000,1000),grid_limits=((0000, 15000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
-    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(30,400,400),grid_limits=((0000, 15000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'])
+    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(30,1000,1000),grid_limits=((0000, 15000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity','velocity'])
     return grid
 
 
