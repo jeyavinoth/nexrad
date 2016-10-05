@@ -17,6 +17,7 @@ import pdb
 
 # main function to read in all the necessary nexrad data 
 def main():
+
     # folder = '/mnt/drive4/nexrad/20110425/'
     # stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
     # stationList = ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ'];
@@ -39,7 +40,6 @@ def main():
     # stations for storm on 2015/09/19
     selectDate = '20150919'
     stationList = ['KILX', 'KIND', 'KGRR', 'KMKX', 'KLOT', 'KDTX', 'KIWX', 'KILN']; 
-    stationList = ['KILX']; 
     timeStepList = [3]
 
     # # stations for storm on 2015/09/30

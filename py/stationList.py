@@ -78,9 +78,12 @@ def main():
     # lonMin = -88
     # lonMax = -82
 
-    # storm on 06/08/2015
-    selectDate = '06_08_2015'; 
-    rangeSelect = [33,41,-89,-79]
+    selectDate = '01_01_2014'; 
+    rangeSelect = [28, 44, -90, -70]; 
+
+    # # storm on 06/08/2015
+    # selectDate = '06_08_2015'; 
+    # rangeSelect = [33,41,-89,-79]
 
     # # storm on 08/11/2015
     # selectDate = '08_11_2015'; 
