@@ -12,65 +12,80 @@ import math
 import os
 import glob
 import pdb
+from stationList import isd
+import time
 
 # global sample file
 
 # main function to read in all the necessary nexrad data 
 def main():
 
-    # folder = '/mnt/drive4/nexrad/20110425/'
-    # stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
-    # stationList = ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ'];
+    # folder = '/mnt/drive4/nexrad/' + selectDate + '/'
 
-    # stationList =  ['KCBW','KGYX','KGYX','KCXX','KBOX','KTYX','KENX','KOKX','KBUF','KBGM','KDIX','KCCX','KCLE','KPBZ','KDOX','KLWX','KAKQ','KMQT','KAPX','KGRR','KDTX','KGRB','KMKX','KLOT','KIWX','KILX','KIND','KILN','KPBZ','KRLX','KJKL','KLVX','KLSX','KHPX','KPAH','KOHX','KVWX','KFCX'];
-   
-    
-    # stationList = ['KAKQ','KMQT','KAPX','KGRR','KDTX','KGRB','KMKX','KLOT','KIWX','KILX','KIND','KILN','KPBZ','KRLX','KJKL','KLVX','KLSX','KHPX','KPAH','KOHX','KVWX','KFCX'];
+    # for timeStep in timeStepList:
+    #     radarInfo = readData(folder,timeStep,stationList)
+    #     grid = convToGrid(radarInfo['radarData'])
+    #     runfile(grid,selectDate,timeStep)
+    #     print 'Completed {0}'.format(timeStep)
 
-    # #stations for storm on 2015/06/08
-    # selectDate = '20150608'
-    # stationList = ['KIND', 'KRLX', 'KJKL', 'KPAH', 'KVWX', 'KPBZ', 'KMRX', 'KLVX', 'KBMX', 'KHTX', 'KGWX', 'KCAE', 'KFCX', 'KILN', 'KGSP', 'KOHX', 'KHPX', 'KFFC']; 
-    # timeStepList = [8,17]
+    # stationList = ['KILX', 'KJKL', 'KLOT', 'KVWX', 'KJGX', 'KMRX', 'KHTX', 'KDIX', 'KILN', 'KJAX', 'KHPX', 'KFFC', 'KOKX', 'KIND', 'KDGX', 'KMOB', 'KLWX', 'KDTX', 'KBOX', 'KBMX', 'KMKX', 'KEVX', 'KGWX', 'KCAE', 'KEOX', 'KLIX', 'KGSP', 'KPAH', 'KDOX', 'KBGM', 'KBUF', 'KIWX', 'KAKQ', 'KTYX', 'KOHX', 'KGYX', 'KMLB', 'KCLX', 'KRLX', 'KLTX', 'KMXX', 'KNQA', 'KPBZ', 'KLVX', 'KVAX', 'KTLH', 'KGRR', 'KMHX', 'KRAX', 'KENX', 'KCCX', 'KFCX', 'KCLE']; 
 
-    # # stations for storm on 2015/08/11
-    # selectDate = '20150811'
-    # stationList = ['KBGM', 'KCXX', 'KBOX', 'KDIX', 'KENX', 'KDOX', 'KGYX', 'KTYX', 'KOKX']
-    # timeStepList = [13,21]
+    # selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/manualSelect.txt'
+    selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/autoSelect.txt'
+    stationData = isd() 
 
-    # stations for storm on 2015/09/19
-    selectDate = '20150919'
-    stationList = ['KILX', 'KIND', 'KGRR', 'KMKX', 'KLOT', 'KDTX', 'KIWX', 'KILN']; 
-    timeStepList = [3]
+    f = open(selectCaseFile,'r')
+    for line in f:
+        val = line.split()
+        selectDate =  '%s%s%s'%(val[0],val[1],val[2])
 
-    # # stations for storm on 2015/09/30
-    # selectDate = '20150930'
-    # stationList = ['KBGM', 'KCXX', 'KLWX', 'KPBZ', 'KBOX', 'KTYX', 'KCCX', 'KAKQ', 'KDIX', 'KBUF', 'KRAX', 'KENX', 'KOKX', 'KDOX', 'KGYX', 'KFCX', 'KCBW']; 
-    # timeStepList = [7,22,23]
+        startHr = int(val[6])/100
+        endHr = int(val[7])/100
 
-    # # stations for storm on 2015/10/28
-    # selectDate = '20151028'
-    # stationList = ['KIND', 'KRLX', 'KILN', 'KVWX', 'KDTX', 'KLVX', 'KIWX', 'KPBZ', 'KMRX', 'KGRR', 'KJKL', 'KOHX', 'KHPX', 'KFCX', 'KCLE']; 
-    # timeStepList = [15,16,23]
+        startTime = float(startHr) + float(int(val[6]) - startHr*100)/60
+        endTime = float(endHr) + float(int(val[7]) - endHr*100)/60
 
-    # # stations for storm on 2015/11/18
-    # selectDate = '20151118'
-    # stationList = ['KIND', 'KJKL', 'KMXX', 'KVWX', 'KJGX', 'KLVX', 'KBMX', 'KHTX', 'KMRX', 'KILN', 'KOHX', 'KHPX', 'KFFC']; 
-    # timeStepList = [17,18]
+        minLat = float(val[8])
+        maxLat = float(val[9])
+        minLon = float(val[10])
+        maxLon = float(val[11])
 
+        originLat = float(val[12])
+        originLon = float(val[13])
 
-    folder = '/mnt/drive4/nexrad/' + selectDate + '/'
+        oMinLat = originLat - 1; 
+        oMaxLat = originLat + 1; 
+        oMinLon = originLon - 1; 
+        oMaxLon = originLon + 1; 
+        
+        isdOut = stationData.searchStationList(oMinLat,oMaxLat,oMinLon,oMaxLon); 
 
-    # timeStepList = range(1,25)
-    # timeStepList = range(9,17)
-    # timeStepList = [3]
+        stationList = isdOut['stationNames']
 
-    for timeStep in timeStepList:
-        radarInfo = readData(folder,timeStep,stationList)
-        grid = convToGrid(radarInfo['radarData'])
-        runfile(grid,selectDate,timeStep)
-        print 'Completed {0}'.format(timeStep)
+        if (not stationList):
+            print "\tNo Stations Available"
+            continue 
+
+        folder = '/mnt/drive4/nexrad/' + selectDate + '/'
+        
+        if (endTime < startTime and startTime > 15):
+            endTime = endTime + 24; 
+
+        if (endTime < startTime and startTime < 15):
+            startTime = startTime - 24; 
+
+        timeStepList = np.arange(np.ceil(startTime),np.ceil(endTime))
+
+        for timeStep in timeStepList: 
+            radarInfo = readData(folder,timeStep,stationList)
+            grid = convToGrid(radarInfo['radarData'],radarInfo['gateFilters'],originLat,originLon)
+            runfile(grid,selectDate,timeStep)
+            print 'Completed {0}'.format(timeStep)
+
+    f.close()
 
     # pdb.set_trace()
+
     
 def readData(folder,hr,stationList):
 
@@ -107,6 +122,7 @@ def readData(folder,hr,stationList):
 
     # looping through the selected files that are close to the given hour and reading the necessary data for those files and creating a list of radar data
     radarData = []
+    gateFilters = []
     cnt = 0
     for filename in fileList: 
         try: 
@@ -115,15 +131,29 @@ def readData(folder,hr,stationList):
             print ('Cannot read {0}'.format(filename))
             continue; 
 
+        gatefilter_radar = pyart.filters.GateFilter(radar)
+        gatefilter_radar.exclude_above('reflectivity', 100)
+        gatefilter_radar.exclude_below('reflectivity', 0)
+        gatefilter_radar.exclude_invalid('reflectivity') 
+
+
         radarData.append(radar)
+        gateFilters.append(gatefilter_radar)
         cnt = cnt + 1
         print ('Completed {0}'.format(filename))
 
-    return {'radarData': radarData, 'hh': str(hr), 'min': '00', 'sec': '00'}
+    return {'radarData': radarData, 'gateFilters': gateFilters, 'hh': str(hr), 'min': '00', 'sec': '00'}
 
-def convToGrid(radarData):
-    grid = pyart.map.grid_from_radars(radarData,grid_shape=(30,1000,1000),grid_limits=((0000, 15000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
-    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity','velocity'])
+def convToGrid(radarData, gateFilters, originLat, originLon):
+
+    t0 = time.time()
+
+    grid = pyart.map.grid_from_radars(radarData,gridding_algo="map_gates_to_grid",gatefilters=gateFilters,grid_shape=(30,400,400),grid_limits=((0000, 15000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'],grid_origin=(originLat,originLon),roi_function='dist_beam',h_factor=0.,nb=0.5,bsp=1,min_radius=500.)
+
+    t1 = time.time()
+    
+    print "\ttime to convert: %d"%(t1-t0)
+
     return grid
 
 
@@ -158,12 +188,16 @@ def runfile(grid,date,timeStep):
 
     cores_3d = findcores3d(allRef)
 
-    outMatFile = './outData/{0}/nex_{1}_{2}.mat'.format(date,date,timeStep)
+    outMatFile = './outData/%s/nex_%s_%02d.mat'%(date,date,timeStep)
+    outDir = './outData/{0}'.format(date)
+
+    if (not os.path.isdir(outDir)):
+        os.makedirs(outDir)
 
     # added allRef to the save variable in matlab to check stuff
     sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef , 'cores3d':cores_3d})
 
-    # pdb.set_trace()
+    pdb.set_trace()
 
 # finding cores depending on 3d profile 
 def findcores3d(allRef): 

@@ -88,10 +88,10 @@ for mmLoop = 1:12
 
       title(sprintf('%04d/%02d/%02d %s-%s',yySelect,mmLoop,ddLoop,startTime,endTime)); 
 
-      print('-djpeg99',sprintf('./selectImages/img_%02d_%02d_%s_%s.jpg',mmLoop,ddLoop,startTime,endTime));
-      close; 
+      % print('-djpeg99',sprintf('./selectImages/img_%02d_%02d_%s_%s.jpg',mmLoop,ddLoop,startTime,endTime));
+      % close; 
 
-      fprintf(sfid,'%04d %02d %02d %8d %8.2f %8.2f %s %s %8.2f %8.2f %8.2f %8.2f\n',yySelect,mmLoop,ddLoop,length(precip),meanPrecip,precipRatio,startTime,endTime,minLat,maxLat,minLon,maxLon); 
+      % fprintf(sfid,'%04d %02d %02d %8d %8.2f %8.2f %s %s %8.2f %8.2f %8.2f %8.2f\n',yySelect,mmLoop,ddLoop,length(precip),meanPrecip,precipRatio,startTime,endTime,minLat,maxLat,minLon,maxLon); 
 
     end
 
