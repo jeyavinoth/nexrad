@@ -8,6 +8,10 @@ make_16_gray
 stageFolder = '/mnt/drive4/stage4/2015/';
 
 selectCases = load('/mnt/drive1/jj/nexrad/src/mfiles/autoSelect.txt'); 
+outputFolder = '/mnt/drive1/jj/nexrad/src/py/outData.marcus/'; 
+outputFolder = '/mnt/drive1/jj/nexrad/src/py/outData.default/'; 
+
+chooseDate = [2015,04,08]; 
 
 xtickarray = [];  
 
@@ -19,6 +23,11 @@ xtickarray = [];
 for caseInd = 1:size(selectCases,1)
 
     selectDate = [selectCases(caseInd,1),selectCases(caseInd,2),selectCases(caseInd,3)]; 
+
+    if (~(selectDate(1) == chooseDate(1) && selectDate(2) == chooseDate(2) && selectDate(3) == chooseDate(3)))
+      continue; 
+    end
+
     dateString = sprintf('%04d%02d%02d',selectDate(1),selectDate(2),selectDate(3)); 
     % disp(dateString); 
 
@@ -47,7 +56,7 @@ for caseInd = 1:size(selectCases,1)
     for timeStep = timeStepList
 
       stageFile = fullfile(stageFolder,sprintf('ST4.%s%02d.01h',dateString,timeStep)); 
-      folder = sprintf('/mnt/drive1/jj/nexrad/src/py/outData/%s/',dateString);
+      folder = sprintf('%s%s/',outputFolder,dateString);
       file = fullfile(folder,sprintf('nex_%s_%02d.mat',dateString,timeStep)); 
 
       if (exist(stageFile) == 0 || exist(file) == 0)
@@ -96,7 +105,7 @@ for caseInd = 1:size(selectCases,1)
       ref_surf = squeeze(data.allRef(4,:,:)); 
       ref_surf(ref_surf == -9999) = NaN;  
 
-      ref_surf = squeeze(nanmax(double(data.allRef),[],1)); 
+      % ref_surf = squeeze(nanmax(double(data.allRef),[],1)); 
 
 
       % data.cores(data.cores == 0) = NaN; 
@@ -110,102 +119,86 @@ for caseInd = 1:size(selectCases,1)
       temp40 = squeeze(nansum(temp40,1)); 
       testCore = double(temp40 > 1); 
 
-      ax1 = subplot(2,3,1);
+      % % core selectoin using column 2km to 4km (have to double check this)
+      % temp = data.allRef(4:12,:,:); 
+      % tempCol = double(temp<40); 
+      % tempCol = squeeze(nansum(tempCol,1)); 
+      % testCore = double(tempCol == 0);
+      % nanInd = double(isnan(temp)); 
+      % nanSum = squeeze(sum(nanInd));
+      % nanFinal = (nanSum == size(temp,1)); 
+      % testCore(nanFinal) = NaN; 
+
+      ax1 = subplot(2,2,1);
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
       m_pcolor(lonGrid,latGrid,ref_surf); shading flat; colorbar; 
       hold on; 
       m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
-      % m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
-      % m_grid('box','fancy','tickdir','in'); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-      % axis([lonMin lonMax latMin latMax]); 
       caxis([0 60]); 
       title('Ref @ 2km (dBz)'); 
       colormap(ax1,'jet');
 
-      ax2 = subplot(2,3,2);
+      ax2 = subplot(2,2,2);
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
       m_pcolor(gpmLon,gpmLat,precipRate); shading flat; colorbar; 
       hold on; 
       m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in'); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
       caxis([0 12]);
       title('GPM Precip Rate [mm/hr]');
       colormap(ax2,map44)
 
-      ax3 = subplot(2,3,3);
+      ax3 = subplot(2,2,3);
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
       m_pcolor(lon,lat,raindata); shading flat; colorbar; 
       hold on; 
       m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in'); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
       caxis([0 12])
       title('Stage 4 [mm/hr]');
       colormap(ax3,map44)
 
 
-      ax4 = subplot(2,3,4);
+      ax4 = subplot(2,2,4);
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
       m_pcolor(lonGrid,latGrid,testCore); shading flat; colorbar; 
       hold on; 
       m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-      % m_grid('box','fancy','tickdir','in'); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
       caxis([0 1])
       title('Core using vertical profile');
       colormap(ax4,'cool')
 
-      ax5 = subplot(2,3,5);
-      m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-      m_pcolor(gpmLon,gpmLat,precipType); shading flat; colorbar; 
-      hold on; 
-      m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in'); 
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-      m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
-      caxis([1 2])
-      title('Precip Type from GPM');
-      colormap(ax5,'cool')
-
       % ax5 = subplot(2,3,5);
       % m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-      % m_pcolor(lonGrid,latGrid,double(ref_surf > 40)); shading flat; colorbar; 
+      % m_pcolor(gpmLon,gpmLat,precipType); shading flat; colorbar; 
       % hold on; 
       % m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-      % caxis([0 1])
-      % title('Cores (40dBz @ 0.5km)');
+      % m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
+      % caxis([1 2])
+      % title('Precip Type from GPM');
       % colormap(ax5,'cool')
 
-      ax6 = subplot(2,3,6);
-      m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-      m_pcolor(lonGrid,latGrid,data.cores); shading flat; colorbar; 
-      hold on; 
-      m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-      % m_grid('box','fancy','tickdir','in'); 
-      m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
-      caxis([0 1])
-      title('Steiner* core selection');
-      colormap(ax6,'cool')
+
+      % ax6 = subplot(2,3,6);
+      % m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
+      % m_pcolor(lonGrid,latGrid,data.cores); shading flat; colorbar; 
+      % hold on; 
+      % m_coast('color','k');
+      % m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
+      % caxis([0 1])
+      % title('Steiner* core selection');
+      % colormap(ax6,'cool')
 
       suptitle(sprintf('%d/%02d/%02d @ %02dH',selectDate(1),selectDate(2),selectDate(3),timeStep)); 
 
       orient portrait
 
-      % if (exist(sprintf('./images/%s',dateString)) == 0)
-      %   mkdir('./images/',dateString); 
-      % end
-      % print('-dpng','-r500',sprintf('./images/%s/img_%s_%02d.png',dateString,dateString,timeStep)); 
-      
-      print('-dpng','-r500',sprintf('./images_all/img_%s_%02d.png',dateString,dateString,timeStep)); 
+      if (exist(sprintf('./images/%s',dateString)) == 0)
+        mkdir('./images/',dateString); 
+      end
+      print('-dpng','-r500',sprintf('./images/%s/img_4frame_%s_%02d.png',dateString,dateString,timeStep)); 
 
       disp(sprintf('Completed %s',dateString)); 
       

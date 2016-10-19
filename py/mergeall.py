@@ -53,10 +53,11 @@ def main():
         originLat = float(val[12])
         originLon = float(val[13])
 
-        oMinLat = originLat - 1; 
-        oMaxLat = originLat + 1; 
-        oMinLon = originLon - 1; 
-        oMaxLon = originLon + 1; 
+        extendDegree = 2; 
+        oMinLat = originLat - extendDegree; 
+        oMaxLat = originLat + extendDegree; 
+        oMinLon = originLon - extendDegree; 
+        oMaxLon = originLon + extendDegree; 
         
         isdOut = stationData.searchStationList(oMinLat,oMaxLat,oMinLon,oMaxLon); 
 
@@ -78,6 +79,9 @@ def main():
 
         for timeStep in timeStepList: 
             radarInfo = readData(folder,timeStep,stationList)
+            if (not radarInfo['radarData']):
+                print "\tNo Radar Information Read"
+                continue 
             grid = convToGrid(radarInfo['radarData'],radarInfo['gateFilters'],originLat,originLon)
             runfile(grid,selectDate,timeStep)
             print 'Completed {0}'.format(timeStep)
@@ -149,6 +153,7 @@ def convToGrid(radarData, gateFilters, originLat, originLon):
     t0 = time.time()
 
     grid = pyart.map.grid_from_radars(radarData,gridding_algo="map_gates_to_grid",gatefilters=gateFilters,grid_shape=(30,400,400),grid_limits=((0000, 15000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'],grid_origin=(originLat,originLon),roi_function='dist_beam',h_factor=0.,nb=0.5,bsp=1,min_radius=500.)
+    # grid = pyart.map.grid_from_radars(radarData,gridding_algo="map_gates_to_grid",gatefilters=gateFilters,grid_shape=(30,400,400),grid_limits=((0000, 15000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'],grid_origin=(originLat,originLon))
 
     t1 = time.time()
     
@@ -197,7 +202,7 @@ def runfile(grid,date,timeStep):
     # added allRef to the save variable in matlab to check stuff
     sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef , 'cores3d':cores_3d})
 
-    pdb.set_trace()
+    # pdb.set_trace()
 
 # finding cores depending on 3d profile 
 def findcores3d(allRef): 

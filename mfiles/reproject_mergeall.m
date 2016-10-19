@@ -16,6 +16,8 @@ xtickarray = [];
 % timeStepList = [03]; 
 % xtickarray = [-92, -88, -84]; 
 
+ratioArr = nan(size(selectCases,1),3); 
+
 for caseInd = 1:size(selectCases,1)
 
     selectDate = [selectCases(caseInd,1),selectCases(caseInd,2),selectCases(caseInd,3)]; 
@@ -100,7 +102,7 @@ for caseInd = 1:size(selectCases,1)
 
 
       % data.cores(data.cores == 0) = NaN; 
-      data.cores_40 = double(data.cores_40); 
+      data.cores_40 = double(data.cores); 
       % data.cores_40(data.cores_40 == 0) = NaN; 
       % data.cores_bg(data.cores_bg == 0) = NaN; 
 
@@ -110,38 +112,78 @@ for caseInd = 1:size(selectCases,1)
       temp40 = squeeze(nansum(temp40,1)); 
       testCore = double(temp40 > 1); 
 
-      ax1 = subplot(2,3,1);
-      m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-      m_pcolor(lonGrid,latGrid,ref_surf); shading flat; colorbar; 
-      hold on; 
-      m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
-      % m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
-      % m_grid('box','fancy','tickdir','in'); 
-      m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-      % axis([lonMin lonMax latMin latMax]); 
-      caxis([0 60]); 
-      title('Ref @ 2km (dBz)'); 
-      colormap(ax1,'jet');
+      temp = data.allRef(:,:,:); 
+      tempAll = double(temp > 0); 
+      tempAll = squeeze(nansum(tempAll,1)); 
+      stratInd = double(tempAll > 0); 
 
-      ax2 = subplot(2,3,2);
+      % re-project
+      testCore(~stratInd) = NaN; 
+      Fnex = TriScatteredInterp(lonGrid(:),latGrid(:),testCore(:)); 
+      nexCore = Fnex(double(gpmLon),double(gpmLat)); 
+
+      tempCore = data.cores; 
+      tempCore(~stratInd) = NaN; 
+      Fsteiner = TriScatteredInterp(lonGrid(:),latGrid(:),tempCore(:)); 
+      steinCore = Fsteiner(double(gpmLon),double(gpmLat)); 
+
+      nexRatio = length(find(nexCore == 1))/length(find(~isnan(nexCore))); 
+      gpmRatio = length(find(precipType == 2))/length(find(~isnan(precipType))); 
+      steinRatio = length(find(steinCore == 1))/length(find(~isnan(steinCore))); 
+      
+      nexSize = length(find(~isnan(nexCore))); 
+      nex.totalSize = nexSize; 
+
+      gpmSize = length(find(~isnan(precipType))); 
+      gpm.totalSize = gpmSize; 
+
+      steinerSize = length(find(~isnan(steinCore))); 
+      steiner.totalSize = steinerSize; 
+
+
+      ratioArr(caseInd,1) = nexRatio; 
+      ratioArr(caseInd,2) = gpmRatio; 
+      ratioArr(caseInd,3) = steinRatio; 
+
+      m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
+      m_gshhs_h('save','temp'); 
+      close all; 
+
+      ax1 = subplot(2,3,1);
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
       m_pcolor(gpmLon,gpmLat,precipRate); shading flat; colorbar; 
       hold on; 
-      m_coast('color','k');
+      % m_coast('color','k');
+      % m_gshhs_h('color','k');
+      m_usercoast('temp','color','k');
       % m_grid('box','fancy','tickdir','in'); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
       % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
       caxis([0 12]);
       title('GPM Precip Rate [mm/hr]');
-      colormap(ax2,map44)
+      colormap(ax1,map44)
 
+      ax2 = subplot(2,3,2);
+      m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
+      m_pcolor(gpmLon,gpmLat,precipType); shading flat; colorbar; 
+      hold on; 
+      % m_coast('color','k');
+      % m_gshhs_h('color','k');
+      m_usercoast('temp','color','k');
+      % m_grid('box','fancy','tickdir','in'); 
+      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+      m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
+      caxis([1 2])
+      title('Precip Type from GPM');
+      colormap(ax2,'cool')
+      
       ax3 = subplot(2,3,3);
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
       m_pcolor(lon,lat,raindata); shading flat; colorbar; 
       hold on; 
-      m_coast('color','k');
+      % m_coast('color','k');
+      % m_gshhs_h('color','k');
+      m_usercoast('temp','color','k');
       % m_grid('box','fancy','tickdir','in'); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
       % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
@@ -149,12 +191,13 @@ for caseInd = 1:size(selectCases,1)
       title('Stage 4 [mm/hr]');
       colormap(ax3,map44)
 
-
       ax4 = subplot(2,3,4);
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-      m_pcolor(lonGrid,latGrid,testCore); shading flat; colorbar; 
+      m_pcolor(gpmLon,gpmLat,nexCore); shading flat; colorbar; 
       hold on; 
-      m_coast('color','k');
+      % m_coast('color','k');
+      m_usercoast('temp','color','k');
+      % m_gshhs_h('color','k');
       % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
       % m_grid('box','fancy','tickdir','in'); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
@@ -164,39 +207,38 @@ for caseInd = 1:size(selectCases,1)
 
       ax5 = subplot(2,3,5);
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-      m_pcolor(gpmLon,gpmLat,precipType); shading flat; colorbar; 
+      m_pcolor(gpmLon,gpmLat,steinCore); shading flat; colorbar; 
       hold on; 
-      m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in'); 
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-      m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
-      caxis([1 2])
-      title('Precip Type from GPM');
-      colormap(ax5,'cool')
-
-      % ax5 = subplot(2,3,5);
-      % m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-      % m_pcolor(lonGrid,latGrid,double(ref_surf > 40)); shading flat; colorbar; 
-      % hold on; 
       % m_coast('color','k');
-      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
-      % caxis([0 1])
-      % title('Cores (40dBz @ 0.5km)');
-      % colormap(ax5,'cool')
-
-      ax6 = subplot(2,3,6);
-      m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
-      m_pcolor(lonGrid,latGrid,data.cores); shading flat; colorbar; 
-      hold on; 
-      m_coast('color','k');
+      m_usercoast('temp','color','k');
+      % m_gshhs_h('color','k');
       % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
       % m_grid('box','fancy','tickdir','in'); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
       caxis([0 1])
       title('Steiner* core selection');
-      colormap(ax6,'cool')
+      colormap(ax5,'cool')
+      
+      ax6 = subplot(2,3,6);
+      m_proj('lambert','long',[lonMin lonMax],'lat',[latMin latMax]); 
+      m_pcolor(lonGrid,latGrid,ref_surf); shading flat; colorbar; 
+      hold on; 
+      % m_coast('color','k');
+      % m_gshhs_h('color','k');
+      m_usercoast('temp','color','k');
+      % m_grid('box','fancy','tickdir','in','xtick',[-104 -96 -88]); 
+      % m_grid('box','fancy','tickdir','in','xtick',[-96 -93 -90]); 
+      % m_grid('box','fancy','tickdir','in'); 
+      m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
+      % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
+      % axis([lonMin lonMax latMin latMax]); 
+      caxis([0 60]); 
+      title('Ref @ 2km (dBz)'); 
+      colormap(ax6,'jet');
 
-      suptitle(sprintf('%d/%02d/%02d @ %02dH',selectDate(1),selectDate(2),selectDate(3),timeStep)); 
+      % titleStr = sprintf('%d/%02d/%02d @ %02dH [%5.2f - %5.2f - %5.2f]',selectDate(1),selectDate(2),selectDate(3),timeStep,nexRatio,gpmRatio,steinRatio);
+      titleStr = sprintf('%d/%02d/%02d @ %02dH',selectDate(1),selectDate(2),selectDate(3),timeStep);
+      suptitle(titleStr); 
 
       orient portrait
 
@@ -205,7 +247,7 @@ for caseInd = 1:size(selectCases,1)
       % end
       % print('-dpng','-r500',sprintf('./images/%s/img_%s_%02d.png',dateString,dateString,timeStep)); 
       
-      print('-dpng','-r500',sprintf('./images_all/img_%s_%02d.png',dateString,dateString,timeStep)); 
+      print('-dpng','-r500',sprintf('./images_all/reprojection_%s_%02d.png',dateString,timeStep)); 
 
       disp(sprintf('Completed %s',dateString)); 
       
