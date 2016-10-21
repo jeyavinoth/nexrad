@@ -1,8 +1,1 @@
-yyyy mm dd #pixels mean_precip precip_ratio starttime endtime minLat maxLat minLon maxLon
-No folder found:/mnt/drive2/gpmdata/2015/02/29/radar/
-No folder found:/mnt/drive2/gpmdata/2015/02/30/radar/
-No folder found:/mnt/drive2/gpmdata/2015/02/31/radar/
-No folder found:/mnt/drive2/gpmdata/2015/04/31/radar/
-No folder found:/mnt/drive2/gpmdata/2015/06/31/radar/
-No folder found:/mnt/drive2/gpmdata/2015/09/31/radar/
-No folder found:/mnt/drive2/gpmdata/2015/11/31/radar/
+yyyy mm dd #pixels mean_precip precip_ratio starttime endtime minLat maxLat minLon maxLon meanTime

@@ -10,7 +10,7 @@ selectionFile = './selectedCases.txt';
 fid = fopen(logFile,'w'); 
 sfid = fopen(selectionFile,'w'); 
 
-fprintf(fid,'yyyy mm dd #pixels mean_precip precip_ratio starttime endtime minLat maxLat minLon maxLon\n'); 
+fprintf(fid,'yyyy mm dd #pixels mean_precip precip_ratio starttime endtime minLat maxLat minLon maxLon meanTime\n'); 
 
 selectRange = [29,47,-89,-72]; 
 latMin = selectRange(1);  
@@ -71,6 +71,7 @@ for mmLoop = 1:12
       section.lat = gpm.lat(xmin:xmax,ymin:ymax); 
       section.lon = gpm.lon(xmin:xmax,ymin:ymax); 
       section.precip = gpm.precipRate(xmin:xmax,ymin:ymax); 
+      section.time = gpm.hr(ymin:ymax).*100 + gpm.minute(ymin:ymax); 
    
       m_proj('lambert','long',[lonMin lonMax],'lat',[latMin, latMax]);
       m_pcolor(section.lon,section.lat,section.precip); shading flat; colorbar; caxis([0 12])
@@ -85,13 +86,18 @@ for mmLoop = 1:12
       maxLat = max(section.lat(:)); 
       minLon = min(section.lon(:)); 
       maxLon = max(section.lon(:)); 
+      
+      % meanTime = median(section.time(:)); 
 
-      title(sprintf('%04d/%02d/%02d %s-%s',yySelect,mmLoop,ddLoop,startTime,endTime)); 
+      minTime = (section.time(1)); 
+      maxTime = (section.time(end)); 
 
-      % print('-djpeg99',sprintf('./selectImages/img_%02d_%02d_%s_%s.jpg',mmLoop,ddLoop,startTime,endTime));
-      % close; 
+      title(sprintf('%04d/%02d/%02d %d-%d',yySelect,mmLoop,ddLoop,minTime,maxTime)); 
 
-      % fprintf(sfid,'%04d %02d %02d %8d %8.2f %8.2f %s %s %8.2f %8.2f %8.2f %8.2f\n',yySelect,mmLoop,ddLoop,length(precip),meanPrecip,precipRatio,startTime,endTime,minLat,maxLat,minLon,maxLon); 
+      print('-djpeg99',sprintf('./selectImages/img_%02d_%02d_%s_%s.jpg',mmLoop,ddLoop,startTime,endTime));
+      close; 
+
+      fprintf(sfid,'%04d %02d %02d %8d %8.2f %8.2f %s %s %8.2f %8.2f %8.2f %8.2f %d %d\n',yySelect,mmLoop,ddLoop,length(precip),meanPrecip,precipRatio,startTime,endTime,minLat,maxLat,minLon,maxLon,minTime,maxTime);
 
     end
 

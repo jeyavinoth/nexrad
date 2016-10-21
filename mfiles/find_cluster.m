@@ -6,7 +6,8 @@ yySelect = 2015;
 
 selectionFile = './autoSelect.txt'; 
 
-data = load('manualSelect.txt'); 
+% data = load('manualSelect.txt'); 
+data = load('selectedCases.txt'); 
 
 sfid = fopen(selectionFile,'w'); 
 
@@ -22,6 +23,8 @@ lonMax = selectRange(4);
 for dataLoop = 1:size(data,1)
     mmLoop = data(dataLoop,2); 
     ddLoop = data(dataLoop,3); 
+    sTimeLoop = data(dataLoop,13); 
+    eTimeLoop = data(dataLoop,14); 
 
     extFolder = sprintf('%04d/%02d/%02d/radar/',yySelect,mmLoop,ddLoop); 
     folder = fullfile(gpmFolder,extFolder); 
@@ -77,6 +80,8 @@ for dataLoop = 1:size(data,1)
       section.lon = double(section.lon); 
       section.precip = double(section.precip); 
 
+      section.time = gpm.hr(ymin:ymax).*100 + gpm.minute(ymin:ymax); 
+      
       % clustering 
       precip = section.precip; 
 
@@ -95,6 +100,13 @@ for dataLoop = 1:size(data,1)
         temp = precip; 
         temp(~obj) = NaN; 
 
+
+        oInd = find(obj); 
+        [oX, oY] = ind2sub(size(group),oInd); 
+
+        oMinY = nanmin(oY); 
+        oMaxY = nanmax(oY); 
+
         [maxPrecipVal, maxPrecipInd] = nanmax(temp(:)); 
 
         if (objSize < 100) 
@@ -112,6 +124,9 @@ for dataLoop = 1:size(data,1)
         olonmin = min(section.lon(obj)); 
         olonmax = max(section.lon(obj)); 
 
+        otimemin = min(section.time(1)); 
+        otimemax = max(section.time(2)); 
+
         omidlat = (olatmin + olatmax) / 2; 
         omidlon = (olonmin + olonmax) / 2; 
 
@@ -124,6 +139,8 @@ for dataLoop = 1:size(data,1)
         uni(uniCnt).midlat = omidlat; 
         uni(uniCnt).midlon = omidlon; 
         uni(uniCnt).objSize = objSize; 
+        uni(uniCnt).minTime = otimemin; 
+        uni(uniCnt).maxTime = otimemax; 
 
         uni(uniCnt).maxPrecipLat = section.lat(maxPrecipInd); 
         uni(uniCnt).maxPrecipLon = section.lon(maxPrecipInd); 
@@ -160,15 +177,14 @@ for dataLoop = 1:size(data,1)
       minLon = min(section.lon(:)); 
       maxLon = max(section.lon(:)); 
 
-      title(sprintf('%04d/%02d/%02d %s-%s',yySelect,mmLoop,ddLoop,startTime,endTime)); 
+      title(sprintf('%04d/%02d/%02d %d-%d',yySelect,mmLoop,ddLoop,uni(maxInd).minTime,uni(maxInd).maxTime)); 
 
       print('-djpeg99',sprintf('./coreSelect/img_%02d_%02d_%s_%s.jpg',mmLoop,ddLoop,startTime,endTime));
       close; 
 
-      fprintf(sfid,'%04d %02d %02d %8d %8.2f %8.2f %s %s %8.2f %8.2f %8.2f %8.2f %8.2f %8.2f\n',yySelect,mmLoop,ddLoop,length(precip),meanPrecip,precipRatio,startTime,endTime,minLat,maxLat,minLon,maxLon,uni(maxInd).maxPrecipLat,uni(maxInd).maxPrecipLon); 
+      fprintf(sfid,'%04d %02d %02d %8d %8.2f %8.2f %s %s %8.2f %8.2f %8.2f %8.2f %8.2f %8.2f %d %d\n',yySelect,mmLoop,ddLoop,length(precip),meanPrecip,precipRatio,startTime,endTime,minLat,maxLat,minLon,maxLon,uni(maxInd).maxPrecipLat,uni(maxInd).maxPrecipLon,uni(maxInd).minTime,uni(maxInd).maxTime); 
 
     end
 end
-
 
 fclose(sfid); 
