@@ -14,7 +14,7 @@ def getText(nodelist):
 
 def dlStationData(date,timeStep,siteList):
 
-    dateDirectory = date[0:4] + date[5:7] + date[8:10]
+    dateDirectory = '/mnt/drive4/nexrad/' + date[0:4] + date[5:7] + date[8:10]
 
     for site in siteList: 
 
@@ -60,7 +60,7 @@ def dlStationData(date,timeStep,siteList):
 
                 tempfile = URLopener()
                 tempfile.retrieve(dlLink,save_loc)
-               
+                
                 command2run = 'gunzip ' + save_loc
 
                 call(command2run,shell=True)
@@ -71,32 +71,50 @@ def dlStationData(date,timeStep,siteList):
 # all stations that cover east coast of united states
 siteList = ['KILX', 'KJKL', 'KLOT', 'KVWX', 'KJGX', 'KMRX', 'KHTX', 'KDIX', 'KILN', 'KJAX', 'KHPX', 'KFFC', 'KOKX', 'KIND', 'KDGX', 'KMOB', 'KLWX', 'KDTX', 'KBOX', 'KBMX', 'KMKX', 'KEVX', 'KGWX', 'KCAE', 'KEOX', 'KLIX', 'KGSP', 'KPAH', 'KDOX', 'KBGM', 'KBUF', 'KIWX', 'KAKQ', 'KTYX', 'KOHX', 'KGYX', 'KMLB', 'KCLX', 'KRLX', 'KLTX', 'KMXX', 'KNQA', 'KPBZ', 'KLVX', 'KVAX', 'KTLH', 'KGRR', 'KMHX', 'KRAX', 'KENX', 'KCCX', 'KFCX', 'KCLE']; 
 date = "2015/05/16"; 
-timeStep = 15; 
 # dlStationData(date,timeStep,siteList)
 
-selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/manualSelect.txt'
+selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/autoSelect.txt'
 
 f = open(selectCaseFile,'r')
 for line in f:
     val = line.split()
     date =  '%s/%s/%s'%(val[0],val[1],val[2])
 
-    startHr = int(val[6])/100
-    endHr = int(val[7])/100
+    if (float(val[1]) < 12):
+        continue
 
-    startTime = float(startHr) + float(int(val[6]) - startHr*100)/60
-    endTime = float(endHr) + float(int(val[7]) - endHr*100)/60
-    
+    # startHr = int(val[6])/100
+    # endHr = int(val[7])/100
+    # startTime = float(startHr) + float(int(val[6]) - startHr*100)/60
+    # endTime = float(endHr) + float(int(val[7]) - endHr*100)/60
 
-    if (endTime < startTime and startTime > 15):
-        endTime = endTime + 24; 
+    # print line
+    # startTime = float(val[8])
 
-    if (endTime < startTime and startTime < 15):
-        startTime = startTime - 24; 
+    # if (endTime < startTime and startTime > 15):
+    #     endTime = endTime + 24; 
+    # if (endTime < startTime and startTime < 15):
+    #     startTime = startTime - 24; 
+    # timeStepList = np.arange(np.ceil(startTime),np.ceil(endTime))
 
-    timeStepList = np.arange(np.ceil(startTime),np.ceil(endTime))
+    print line
 
-    for timeStep in timeStepList: 
-        dlStationData(date,timeStep,siteList)
+    startTime = float(val[14])
+    endTime = float(val[15])
+
+    startHr = float(int(startTime/100))
+    startMin = float(startTime - startHr*100)
+    startTime = startHr + startMin/60
+
+    endHr = float(int(endTime/100))
+    endMin = float(endTime - endHr*100)
+    endTime = endHr + endMin/60
+
+    if (startTime > endTime):
+        continue; 
+
+    timeStep = (startTime + endTime) / 2
+
+    dlStationData(date,timeStep,siteList)
 
 f.close()
