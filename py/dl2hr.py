@@ -14,6 +14,8 @@ def getText(nodelist):
 
 def dlStationData(date,timeStep,siteList):
 
+    timeRange = 60 
+
     dateDirectory = '/mnt/drive4/nexrad/' + date[0:4] + date[5:7] + date[8:10]
 
     for site in siteList: 
@@ -49,7 +51,7 @@ def dlStationData(date,timeStep,siteList):
 
                 timeFile = float(file[-13:-11]) + float(file[-11:-9])/60.
 
-                if (timeFile < timeStep-10/60.) or (timeFile > timeStep+10/60.):
+                if (timeFile < timeStep-timeRange/60.) or (timeFile > timeStep+timeRange/60.):
                     continue; 
 
                 save_loc = os.path.abspath("%s/%s/%s" % (dateDirectory,site,file[16:]))
@@ -76,9 +78,17 @@ date = "2015/05/16";
 selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/autoSelect.txt'
 
 f = open(selectCaseFile,'r')
+lineCnt = 0
 for line in f:
     val = line.split()
     date =  '%s/%s/%s'%(val[0],val[1],val[2])
+    
+    lineCnt = lineCnt + 1 
+
+    if (lineCnt != 61): 
+        continue; 
+
+    print date
 
     # startHr = int(val[6])/100
     # endHr = int(val[7])/100

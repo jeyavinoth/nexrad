@@ -69,22 +69,29 @@ def main():
 
         folder = '/mnt/drive4/nexrad/' + selectDate + '/'
         
-        if (endTime < startTime and startTime > 15):
-            endTime = endTime + 24; 
+        startTime = float(val[14])
+        endTime = float(val[15])
 
-        if (endTime < startTime and startTime < 15):
-            startTime = startTime - 24; 
+        startHr = float(int(startTime/100))
+        startMin = float(startTime - startHr*100)
+        startTime = startHr + startMin/60
 
-        timeStepList = np.arange(np.ceil(startTime),np.ceil(endTime))
+        endHr = float(int(endTime/100))
+        endMin = float(endTime - endHr*100)
+        endTime = endHr + endMin/60
 
-        for timeStep in timeStepList: 
-            radarInfo = readData(folder,timeStep,stationList)
-            if (not radarInfo['radarData']):
-                print "\tNo Radar Information Read"
-                continue 
-            grid = convToGrid(radarInfo['radarData'],radarInfo['gateFilters'],originLat,originLon)
-            runfile(grid,selectDate,timeStep)
-            print 'Completed {0}'.format(timeStep)
+        if (startTime > endTime):
+            continue; 
+
+        timeStep = (startTime + endTime) / 2
+
+        radarInfo = readData(folder,timeStep,stationList)
+        if (not radarInfo['radarData']):
+            print "\tNo Radar Information Read"
+            continue 
+        grid = convToGrid(radarInfo['radarData'],radarInfo['gateFilters'],originLat,originLon)
+        runfile(grid,selectDate,timeStep)
+        print 'Completed {0}'.format(timeStep)
 
     f.close()
 
@@ -116,6 +123,7 @@ def readData(folder,hr,stationList):
             time_sec = filename[17+folderLen:19+folderLen]
             time_hhmin = float(time_hh) + float(time_min)/60. + float(time_sec)/3600.
             time_diff = abs(hr - time_hhmin)
+            # print("{0} -> {1} {2}".format(time_diff,hr,time_hhmin))
             if (time_diff < minDiff and time_diff < float(5./60.)):
                 minDiff = time_diff
                 minFile = filename
