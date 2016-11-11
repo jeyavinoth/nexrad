@@ -2,7 +2,7 @@
 clear; 
 close all; 
 
-setup_nctoolbox
+% setup_nctoolbox
 make_16_gray
 
 stageFolder = '/mnt/drive4/stage4/2015/';
@@ -48,7 +48,7 @@ for caseInd = 1:size(selectCases,1)
 
     for timeStep = timeStepList
 
-      stageFile = fullfile(stageFolder,sprintf('ST4.%s%02d.01h',dateString,timeStep)); 
+      % stageFile = fullfile(stageFolder,sprintf('ST4.%s%02d.01h',dateString,timeStep)); 
       folder = sprintf('/mnt/drive1/jj/nexrad/src/py/outData/%s/',dateString);
       file = fullfile(folder,sprintf('nex_%s_%02d.mat',dateString,timeStep)); 
 
@@ -74,6 +74,8 @@ for caseInd = 1:size(selectCases,1)
 
       % getting rid of other precipitations except startiform n convective
       precipType (precipType ~= 1 & precipType ~= 2) = NaN; 
+      precipType (precipType == 1) = 0; 
+      precipType (precipType == 2) = 1; 
       
       data = load(file); 
 
@@ -128,7 +130,7 @@ for caseInd = 1:size(selectCases,1)
       steinCore = Fsteiner(double(gpmLon),double(gpmLat)); 
 
       nexRatio = length(find(nexCore == 1))/length(find(~isnan(nexCore))); 
-      gpmRatio = length(find(precipType == 2))/length(find(~isnan(precipType))); 
+      gpmRatio = length(find(precipType == 1))/length(find(~isnan(precipType))); 
       steinRatio = length(find(steinCore == 1))/length(find(~isnan(steinCore))); 
       
       nexSize = length(find(~isnan(nexCore))); 
@@ -173,7 +175,7 @@ for caseInd = 1:size(selectCases,1)
       % m_grid('box','fancy','tickdir','in'); 
       % m_grid('box','fancy','tickdir','in','xtick',[-85 -83 -81]); 
       m_grid('box','fancy','tickdir','in','xtick',xtickarray); 
-      caxis([1 2])
+      caxis([0 1])
       title('Precip Type from GPM');
       colormap(ax2,'cool')
       
