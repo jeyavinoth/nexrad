@@ -1,5 +1,4 @@
 import matplotlib
-
 # matplotlib.use('TkAgg')
 
 import pyart
@@ -11,108 +10,73 @@ import copy
 import math
 import os
 import glob
+
 import pdb
-from stationList import isd
-import time
 
 # global sample file
 
 # main function to read in all the necessary nexrad data 
 def main():
+    folder = '/mnt/drive4/nexrad/20110425/'
+    # stationList = ['KAMA','KDDC','KEAX','KFDR','KGLD','KICT','KINX','KSGF','KSRX','KTLX','KTWX','KUEX','KVNX'];
+    stationList = ['KVNX'];
+    
+    timeStepList = range(1,25)
+    timeStepList = range(1,2)
 
-    # folder = '/mnt/drive4/nexrad/' + selectDate + '/'
+    for timeStep in timeStepList:
+        fileList = readFiles(folder,timeStep,stationList)
 
-    # for timeStep in timeStepList:
-    #     radarInfo = readData(folder,timeStep,stationList)
-    #     grid = convToGrid(radarInfo['radarData'])
-    #     runfile(grid,selectDate,timeStep)
-    #     print 'Completed {0}'.format(timeStep)
+    filename = fileList[0]
+  
+    print ('Regridding data') 
 
-    # stationList = ['KILX', 'KJKL', 'KLOT', 'KVWX', 'KJGX', 'KMRX', 'KHTX', 'KDIX', 'KILN', 'KJAX', 'KHPX', 'KFFC', 'KOKX', 'KIND', 'KDGX', 'KMOB', 'KLWX', 'KDTX', 'KBOX', 'KBMX', 'KMKX', 'KEVX', 'KGWX', 'KCAE', 'KEOX', 'KLIX', 'KGSP', 'KPAH', 'KDOX', 'KBGM', 'KBUF', 'KIWX', 'KAKQ', 'KTYX', 'KOHX', 'KGYX', 'KMLB', 'KCLX', 'KRLX', 'KLTX', 'KMXX', 'KNQA', 'KPBZ', 'KLVX', 'KVAX', 'KTLH', 'KGRR', 'KMHX', 'KRAX', 'KENX', 'KCCX', 'KFCX', 'KCLE']; 
+    radar = pyart.io.read_nexrad_archive(filename)
+    grid = pyart.map.grid_from_radars((radar,),grid_shape=(12,1000,1000),grid_limits=((0000, 6000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    # grid = pyart.map.grid_from_radars((radar,),grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
 
-    # selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/manualSelect.txt'
-    selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/autoSelect.txt'
-    stationData = isd() 
+    axInfo =  grid.axes
 
-    f = open(selectCaseFile,'r')
-    for line in f:
-        val = line.split()
-        selectDate =  '%s%s%s'%(val[0],val[1],val[2])
+    latOrigin = axInfo['lat']['data']
+    lonOrigin = axInfo['lon']['data']
+    altOrigin = axInfo['alt']['data']
 
-        startHr = int(val[6])/100
-        endHr = int(val[7])/100
+    xArray = axInfo['x_disp']['data']
+    yArray = axInfo['y_disp']['data']
 
-        startTime = float(startHr) + float(int(val[6]) - startHr*100)/60
-        endTime = float(endHr) + float(int(val[7]) - endHr*100)/60
+    print ('Getting Lat & Lon')
+    lon,lat = pyart.core.cartesian_to_geographic_aeqd(xArray,yArray,lonOrigin,latOrigin)
 
-        minLat = float(val[8])
-        maxLat = float(val[9])
-        minLon = float(val[10])
-        maxLon = float(val[11])
+    ref = grid.fields['reflectivity']['data'][0];
+    ref = np.asarray(ref)
+    ref[ref==0.0] = np.nan
 
-        originLat = float(val[12])
-        originLon = float(val[13])
+    # added in by JJ, assuming [0] means the first level 
+    allRef = grid.fields['reflectivity']['data']
+    allRef = np.asarray(allRef)
+    allRef[allRef==0.0] = np.nan
 
-        extendDegree = 2; 
-        oMinLat = originLat - extendDegree; 
-        oMaxLat = originLat + extendDegree; 
-        oMinLon = originLon - extendDegree; 
-        oMaxLon = originLon + extendDegree; 
-        
-        isdOut = stationData.searchStationList(oMinLat,oMaxLat,oMinLon,oMaxLon); 
+    # find ref > 40 
+    cores = findcores(ref)
 
-        stationList = isdOut['stationNames']
+    outMatFile = './outData/nex_{0}_{1}.mat'.format(20110425,1)
 
-        if (not stationList):
-            print "\tNo Stations Available"
-            continue 
+    # added allRef to the save variable in matlab to check stuff
+    sio.savemat(outMatFile,{'ref2': ref2, 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef }) 
 
-        folder = '/mnt/drive4/nexrad/' + selectDate + '/'
-        
-        startTime = float(val[14])
-        endTime = float(val[15])
-
-        startHr = float(int(startTime/100))
-        startMin = float(startTime - startHr*100)
-        startTime = startHr + startMin/60
-
-        endHr = float(int(endTime/100))
-        endMin = float(endTime - endHr*100)
-        endTime = endHr + endMin/60
-
-        if (startTime > endTime):
-            continue; 
-
-        timeStep = (startTime + endTime) / 2
-        timeStepHr = int(timeStep); 
-        timeStepMin = int((timeStep - float(timeStepHr))*60); 
-
-        radarInfo = readData(folder,timeStep,stationList)
-
-        if (not radarInfo['radarData']):
-            print "\tNo Radar Information Read"
-            continue 
-
-        grid = convToGrid(radarInfo['radarData'],radarInfo['gateFilters'],originLat,originLon)
-        runfile(grid,selectDate,timeStep)
-        print 'Completed %02d:%02d'%(timeStepHr,timeStepMin)
-        # print 'Completed {0}:{1}'.format(timeStepHr,timeStepMin)
-
-    f.close()
-
-    # pdb.set_trace()
+    pdb.set_trace()
 
     
-def readData(folder,hr,stationList):
+def readFiles(folder,hr,stationList):
 
     fileList = []
-    folderLen = len(folder) + 5
+    folderLen = len(folder)
     
     # for each station in hte provided station list run the code
     for station in stationList:
 
         # look for all stations given for the date
-        searchString = folder + station + '/' + station + '*_V*'
+        searchString = folder + station + '20110425*_V*'
         radarFiles = glob.glob(searchString)
     
         # if no data is found for the station then skip 
@@ -128,7 +92,6 @@ def readData(folder,hr,stationList):
             time_sec = filename[17+folderLen:19+folderLen]
             time_hhmin = float(time_hh) + float(time_min)/60. + float(time_sec)/3600.
             time_diff = abs(hr - time_hhmin)
-            # print("{0} -> {1} {2}".format(time_diff,hr,time_hhmin))
             if (time_diff < minDiff and time_diff < float(5./60.)):
                 minDiff = time_diff
                 minFile = filename
@@ -137,41 +100,13 @@ def readData(folder,hr,stationList):
         if (len(minFile) != 0):
             fileList.append(minFile)
 
-    # looping through the selected files that are close to the given hour and reading the necessary data for those files and creating a list of radar data
-    radarData = []
-    gateFilters = []
-    cnt = 0
-    for filename in fileList: 
-        try: 
-            radar = pyart.io.read_nexrad_archive(filename)
-        except:
-            print ('Cannot read {0}'.format(filename))
-            continue; 
-
-        gatefilter_radar = pyart.filters.GateFilter(radar)
-        gatefilter_radar.exclude_above('reflectivity', 100)
-        gatefilter_radar.exclude_below('reflectivity', 0)
-        gatefilter_radar.exclude_invalid('reflectivity') 
-
-
-        radarData.append(radar)
-        gateFilters.append(gatefilter_radar)
-        cnt = cnt + 1
-        print ('Completed {0}'.format(filename))
-
-    return {'radarData': radarData, 'gateFilters': gateFilters, 'hh': str(hr), 'min': '00', 'sec': '00'}
-
-def convToGrid(radarData, gateFilters, originLat, originLon):
-
-    t0 = time.time()
-
-    grid = pyart.map.grid_from_radars(radarData,gridding_algo="map_gates_to_grid",gatefilters=gateFilters,grid_shape=(30,400,400),grid_limits=((0000, 15000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'],grid_origin=(originLat,originLon),roi_function='dist_beam',h_factor=0.,nb=0.5,bsp=1,min_radius=500.)
-    # grid = pyart.map.grid_from_radars(radarData,gridding_algo="map_gates_to_grid",gatefilters=gateFilters,grid_shape=(30,400,400),grid_limits=((0000, 15000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'],grid_origin=(originLat,originLon))
-
-    t1 = time.time()
     
-    print "\ttime to convert: %d"%(t1-t0)
+    return fileList
 
+def convToGrid(radarData):
+    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(1,1000,1000),grid_limits=((2000, 2000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    grid = pyart.map.grid_from_radars(radarData,grid_shape=(12,1000,1000),grid_limits=((0000, 6000), (-1000000.0, 1000000.0), (-1000000.0, 1000000.0)),fields=['reflectivity'])
+    # grid = pyart.map.grid_from_radars(radarData,grid_shape=(12,400,400),grid_limits=((0000, 6000), (-200000.0, 200000.0), (-200000.0, 200000.0)),fields=['reflectivity'])
     return grid
 
 
@@ -197,53 +132,18 @@ def runfile(grid,date,timeStep):
 
     # added in by JJ, assuming [0] means the first level 
     allRef = grid.fields['reflectivity']['data']
-    allRef = np.asarray(allRef)
-    # allRef[allRef==0.0 | allRef==-9999.0] = np.nan
-    allRef[np.logical_or(allRef == 0.0, allRef == -9999.)] = np.nan
+    allRef = np.asarray(allRef) 
+    allRef[allRef == 0.0] = np.nan
 
     # find ref > 40 
     cores = findcores(ref)
 
-    cores_3d = findcores3d(allRef)
+    outMatFile = './outData/nex_{0}_{1}.mat'.format(date,timeStep)
 
-    timeStepHr = int(timeStep); 
-    timeStepMin = int((timeStep - float(timeStepHr))*60); 
-    outMatFile = './outData/%s/nex_%s_%02d%02d.mat'%(date,date,timeStepHr,timeStepMin)
-    outDir = './outData/{0}'.format(date)
-
-    if (not os.path.isdir(outDir)):
-        os.makedirs(outDir)
 
     # added allRef to the save variable in matlab to check stuff
-    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef , 'cores3d':cores_3d})
+    sio.savemat(outMatFile,{'cores_40':cores['ref40'], 'lon':lon,'lat':lat,'ref':ref,'cores_bg':cores['corebg'],'cores':cores['cores'], 'allRef':allRef }) 
 
-    # pdb.set_trace()
-
-# finding cores depending on 3d profile 
-def findcores3d(allRef): 
-   
-    arrSize = allRef.shape 
-    cores = np.full((arrSize[1], arrSize[2]),0)
-
-    for i in np.arange(0,arrSize[1]):
-        for j in np.arange(0,arrSize[2]):
-            profile = allRef[:,i,j]
-            
-            # find if there is a value of < 40dbz on the column from 2 - 6km (5 - 11 index)
-            noVal = 0
-            haveVal = 0
-            for k in np.arange(5,12):
-                if (np.isnan(profile[k])):
-                    continue;
-                if (profile[k] < 40.):
-                    noVal = 1
-                else: 
-                    haveVal = 1
-
-            if (noVal != 1 and haveVal == 1):
-                cores[i,j] = 1
-
-    return cores
 
 def findcores(ref): 
 

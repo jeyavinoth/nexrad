@@ -1,7 +1,7 @@
 % % init
 % clear; 
 % close all; 
-
+clear all; 
 clear ratioArr
 
 % setup_nctoolbox
@@ -15,10 +15,11 @@ selectCases = unique(allCases,'rows');
 xtickarray = [];  
 
 plotFlag = 0; % 0 => dont plot, 1 => plot figures
-% dbzThres = 40; % dbz value about what height 
-% hThres = 6; % above what height must I check the dbz value  
+dbzThres = 40; % dbz value about what height 
+hThres = 6; % above what height must I check the dbz value  
 
-ratioArr = nan(size(selectCases,1),3); 
+% ratioArr = nan(size(selectCases,1),3); 
+ratioArr = [];
 
 for caseInd = 1:size(selectCases,1)
 
@@ -70,13 +71,6 @@ for caseInd = 1:size(selectCases,1)
       continue; 
     end
 
-    % radar = ncgeodataset(stageFile); 
-    % rain = radar.geovariable(radar.variables(3)); 
-    % grid = rain.grid_interop(1,:,:); 
-    % lat(:,:) = grid.lat; 
-    % lon(:,:) = grid.lon; 
-    % raindata(:,:) = double(rain.data(1,:,:)); 
-
     gpmLat = gpmData.lat; 
     gpmLon = gpmData.lon; 
     precipRate = gpmData.precipRate; 
@@ -110,7 +104,7 @@ for caseInd = 1:size(selectCases,1)
     ref_2km = squeeze(nanmax(double(data.allRef),[],1)); 
 
     data.cores_40 = double(data.cores); 
-    
+
     % find cores using Johnny's method of finding convection over 6km 
     hThresInd = floor(hThres/0.5); 
 
@@ -151,22 +145,22 @@ for caseInd = 1:size(selectCases,1)
     steinerSize = length(find(~isnan(steinCore))); 
     steiner.totalSize = steinerSize; 
 
-    ratioArr(caseInd,1) = nexRatio; 
-    ratioArr(caseInd,2) = gpmRatio; 
-    ratioArr(caseInd,3) = steinRatio;
-    
-    ratioArr(caseInd,4) = nexSum; 
-    ratioArr(caseInd,5) = gpmSum; 
-    ratioArr(caseInd,6) = steinSum;
+    [nexX nexY] = find(testCore == 1); 
+    nexXY = find(testCore == 1); 
 
-    ratioArr(caseInd,7) = yyLoop; 
-    ratioArr(caseInd,8) = mmLoop; 
-    ratioArr(caseInd,9) = ddLoop; 
-    ratioArr(caseInd,10) = timeStepHr; 
-    ratioArr(caseInd,11) = timeStepMin; 
-    ratioArr(caseInd,12) = timeStep; 
+    if (isempty(nexXY))
+      continue; 
+    end
 
+    tempArr = [];
+    % temp = squeeze(data.allRef(4,nexX(:),nexY(:))); 
+    temp = squeeze(data.allRef(4,[nexXY(:)])); 
+    tempArr(:,1) = temp(:); 
+    % temp = squeeze(data.allRef(12,nexX(:),nexY(:))); 
+    temp = squeeze(data.allRef(12,[nexXY(:)])); 
+    tempArr(:,2) = temp(:); 
 
+    ratioArr = cat(1,ratioArr,tempArr); 
 
     if (plotFlag == 1) 
 
@@ -247,5 +241,4 @@ for caseInd = 1:size(selectCases,1)
       close all; 
 end %caseInd
 
-saveFile = sprintf('./ratioArrays/ratio_%02d_%d.mat',dbzThres,hThres); 
-save(saveFile,'ratioArr'); 
+save('-v7.3','test_grid.mat','ratioArr'); 

@@ -20,24 +20,23 @@ import time
 # main function to read in all the necessary nexrad data 
 def main():
 
-    # folder = '/mnt/drive4/nexrad/' + selectDate + '/'
-
-    # for timeStep in timeStepList:
-    #     radarInfo = readData(folder,timeStep,stationList)
-    #     grid = convToGrid(radarInfo['radarData'])
-    #     runfile(grid,selectDate,timeStep)
-    #     print 'Completed {0}'.format(timeStep)
-
-    # stationList = ['KILX', 'KJKL', 'KLOT', 'KVWX', 'KJGX', 'KMRX', 'KHTX', 'KDIX', 'KILN', 'KJAX', 'KHPX', 'KFFC', 'KOKX', 'KIND', 'KDGX', 'KMOB', 'KLWX', 'KDTX', 'KBOX', 'KBMX', 'KMKX', 'KEVX', 'KGWX', 'KCAE', 'KEOX', 'KLIX', 'KGSP', 'KPAH', 'KDOX', 'KBGM', 'KBUF', 'KIWX', 'KAKQ', 'KTYX', 'KOHX', 'KGYX', 'KMLB', 'KCLX', 'KRLX', 'KLTX', 'KMXX', 'KNQA', 'KPBZ', 'KLVX', 'KVAX', 'KTLH', 'KGRR', 'KMHX', 'KRAX', 'KENX', 'KCCX', 'KFCX', 'KCLE']; 
 
     # selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/manualSelect.txt'
     selectCaseFile = '/mnt/drive1/jj/nexrad/src/mfiles/autoSelect.txt'
     stationData = isd() 
 
+    lineCnt = 0; 
     f = open(selectCaseFile,'r')
     for line in f:
+        lineCnt = lineCnt + 1
+
+        if (lineCnt != 61): 
+            continue
+
         val = line.split()
         selectDate =  '%s%s%s'%(val[0],val[1],val[2])
+
+        print selectDate
 
         startHr = int(val[6])/100
         endHr = int(val[7])/100
@@ -62,6 +61,7 @@ def main():
         isdOut = stationData.searchStationList(oMinLat,oMaxLat,oMinLon,oMaxLon); 
 
         stationList = isdOut['stationNames']
+        # stationList = ['KDGX']
 
         if (not stationList):
             print "\tNo Stations Available"
@@ -83,20 +83,24 @@ def main():
         if (startTime > endTime):
             continue; 
 
-        timeStep = (startTime + endTime) / 2
-        timeStepHr = int(timeStep); 
-        timeStepMin = int((timeStep - float(timeStepHr))*60); 
+        # timeStep = (startTime + endTime) / 2
+        timeStepList = np.arange(10,12,10./60.)
+        print timeStepList
 
-        radarInfo = readData(folder,timeStep,stationList)
+        for timeStep in timeStepList:
 
-        if (not radarInfo['radarData']):
-            print "\tNo Radar Information Read"
-            continue 
+            timeStepHr = int(timeStep)
+            timeStepMin = (timeStep - float(timeStepHr))*60.
 
-        grid = convToGrid(radarInfo['radarData'],radarInfo['gateFilters'],originLat,originLon)
-        runfile(grid,selectDate,timeStep)
-        print 'Completed %02d:%02d'%(timeStepHr,timeStepMin)
-        # print 'Completed {0}:{1}'.format(timeStepHr,timeStepMin)
+            print 'working @ {0}:{1}'.format(timeStepHr, timeStepMin)
+
+            radarInfo = readData(folder,timeStep,stationList)
+            if (not radarInfo['radarData']):
+                print "\tNo Radar Information Read"
+                continue 
+            grid = convToGrid(radarInfo['radarData'],radarInfo['gateFilters'],originLat,originLon)
+            runfile(grid,selectDate,timeStepHr,timeStepMin)
+            print 'Completed {0}:{1}'.format(timeStepHr, timeStepMin)
 
     f.close()
 
@@ -128,11 +132,9 @@ def readData(folder,hr,stationList):
             time_sec = filename[17+folderLen:19+folderLen]
             time_hhmin = float(time_hh) + float(time_min)/60. + float(time_sec)/3600.
             time_diff = abs(hr - time_hhmin)
-            # print("{0} -> {1} {2}".format(time_diff,hr,time_hhmin))
             if (time_diff < minDiff and time_diff < float(5./60.)):
                 minDiff = time_diff
                 minFile = filename
-            # print '{0} // {3} --> {1} --> {2}'.format(filename, time_hhmin, time_diff, float(5./60.))
 
         if (len(minFile) != 0):
             fileList.append(minFile)
@@ -176,7 +178,7 @@ def convToGrid(radarData, gateFilters, originLat, originLon):
 
 
 # reading in one nexrad file and plotting the figures
-def runfile(grid,date,timeStep):
+def runfile(grid,date,timeStepHr,timeStepMin):
    
     axInfo =  grid.axes
 
@@ -206,10 +208,8 @@ def runfile(grid,date,timeStep):
 
     cores_3d = findcores3d(allRef)
 
-    timeStepHr = int(timeStep); 
-    timeStepMin = int((timeStep - float(timeStepHr))*60); 
-    outMatFile = './outData/%s/nex_%s_%02d%02d.mat'%(date,date,timeStepHr,timeStepMin)
-    outDir = './outData/{0}'.format(date)
+    outMatFile = './outData_single/%s/nex_%s_%02d_%02d.mat'%(date,date,timeStepHr,timeStepMin)
+    outDir = './outData_single/{0}'.format(date)
 
     if (not os.path.isdir(outDir)):
         os.makedirs(outDir)
